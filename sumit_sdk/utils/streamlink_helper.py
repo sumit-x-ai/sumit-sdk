@@ -34,7 +34,7 @@ class StreamlinkHelper:
 
         stream_options = streamlink.streams(stream)
         if not stream_options:
-            print("No playable streams found on this URL:", stream)
+            raise RuntimeError("No streams found on:", stream)
             return False
 
         option = None
@@ -82,7 +82,6 @@ class StreamlinkHelper:
         while not self.reader_stop_sig.is_set():
             data = self.read_chunk(self.n_bytes)
             if data is not None:
-                print(len(data))
                 self._fill_buffer(data)
                 time.sleep(self.interval/2)
     
