@@ -46,6 +46,19 @@ class RealtimeSTT(BaseWrapper):
         self.transcript_callback = transcript_callback
         return data
 
+    def _inject_session(self, session_id, url, transcript_callback) -> dict:
+        """
+        Starts a new session and stores its details.
+
+        Returns:
+        - dict: containing the session ID and its corresponding URL.
+        """        
+        # data = self.api.safe_call(RealtimeSTT._START_EP, {}).json()
+        self.sessions[session_id] = {"id": session_id, "url": url}
+        self.current_session = session_id
+        self.transcript_callback = transcript_callback
+        return self.sessions[session_id]
+
     def stop_session(self, session_id: str=None):
         """
         Stops an existing session.
@@ -95,7 +108,7 @@ class RealtimeSTT(BaseWrapper):
             session_id = self.current_session
         print("monitor instance state...")
         self._wait_ready(session_id)
-        url = self.sessions[session_id]["url"]
+        url = self.sessions[session_id]["endpoint"]
         print(f"ready, init socket client: {url}")
         sock = SocketClient("https://" + url)
         sock.register_callback('txt', self._parse_json)
