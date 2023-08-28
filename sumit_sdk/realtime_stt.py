@@ -54,7 +54,7 @@ class RealtimeSTT(BaseWrapper):
         - dict: containing the session ID and its corresponding URL.
         """        
         # data = self.api.safe_call(RealtimeSTT._START_EP, {}).json()
-        self.sessions[session_id] = {"id": session_id, "url": url}
+        self.sessions[session_id] = {"id": session_id, "endpoint": url}
         self.current_session = session_id
         self.transcript_callback = transcript_callback
         return self.sessions[session_id]
@@ -85,7 +85,9 @@ class RealtimeSTT(BaseWrapper):
         ready = False
         wait_time = 30
         while not ready:
-            ret = self.api.safe_call(RealtimeSTT._STATUS_EP, {"id": session_id}).json()
+            ret = self.api.safe_call(RealtimeSTT._STATUS_EP, {"id": session_id})
+            if ret:
+                ret = ret.json()
             ready = ret.get('status', {}).get('transcript')
             if not ready:
                 # limit the number of calls to sumit-api to avoid `quota exceed` block
