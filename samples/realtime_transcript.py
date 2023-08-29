@@ -15,7 +15,7 @@ rt_mgr.start_session(callback)
 sock = rt_mgr.connect()
 
 # create recorder
-rec = Recorder(as_base64=True, buffer_sec=2)  # encode samples as base64, to send the chunks over web-socket
+rec = Recorder(as_base64=True, buffer_sec=3)  # encode samples as base64, to send the chunks over web-socket
 rec.start()
 stop_sig = False
 while sock.connected and not stop_sig:

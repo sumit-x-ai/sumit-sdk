@@ -1,7 +1,14 @@
 from sumit_sdk.api import BaseWrapper 
 from sumit_sdk.utils.socketio_client import SocketClient 
 import time
-import json 
+import json
+
+class Profiles:
+    default = 'default'  # Est. latency: 3 seconds
+    low_latency = 'low_latency'  # Est. latency: 2 seconds
+    lower_latency = 'lower_latency'  # Est. latency: 1 seconds
+    accurate = 'accurate'  # Est. latency: 5 seconds
+    very_accurate = 'very_accurate'  # Est. latency: 7 seconds
 
 class RealtimeSTT(BaseWrapper):
     """
@@ -32,14 +39,25 @@ class RealtimeSTT(BaseWrapper):
         self.current_session = None
         self.transcript_callback = None
 
-    def start_session(self, transcript_callback) -> dict:
+    def start_session(self, transcript_callback, language:str=None, profile:str=None) -> dict:
         """
         Starts a new session and stores its details.
 
+        Args:
+        - transcript_callback: callback function to notify when transcription received.
+        - language (str): language code. default is he-IL (Hebrew)
+        - profile (str): one of `realtime_stt.Profiles` - control the latency and accuracy of the transcription. 
+            usually the higher the latency, higher the accuracy 
+
         Returns:
         - dict: containing the session ID and its corresponding URL.
-        """        
-        data = self.api.safe_call(RealtimeSTT._START_EP, {}).json()
+        """      
+        req = {}  
+        if language:
+            req['lang'] = language
+        if profile:
+            req['profile'] = profile
+        data = self.api.safe_call(RealtimeSTT._START_EP, req).json()
         session_id = data.get("session_id")
         self.sessions[session_id] = data
         self.current_session = session_id
@@ -68,7 +86,11 @@ class RealtimeSTT(BaseWrapper):
         """
         if not session_id:
             session_id = self.current_session
-        ret = self.api.safe_call(RealtimeSTT._STOP_EP, {"id": session_id}).json()
+        ret = self.api.safe_call(RealtimeSTT._STOP_EP, {"id": session_id})
+        if ret:
+            ret = ret.json()
+        else:
+            raise Exception("failed to stop session")
         if session_id in self.sessions:
             self.sessions.pop(session_id)
 
@@ -88,6 +110,8 @@ class RealtimeSTT(BaseWrapper):
             ret = self.api.safe_call(RealtimeSTT._STATUS_EP, {"id": session_id})
             if ret:
                 ret = ret.json()
+            else:
+                continue
             ready = ret.get('status', {}).get('transcript')
             if not ready:
                 # limit the number of calls to sumit-api to avoid `quota exceed` block

@@ -49,10 +49,9 @@ def transcribe(speech, state=""):
     except:
         print("failed to parse data")
     audio_buf = np.concatenate([audio_buf, y])
-    if len(audio_buf) < 30000:
+    if len(audio_buf) < 46000:
         return state, state
     data = base64.b64encode(audio_buf.tobytes())
-    print(len(data), audio_buf.shape)
     audio_buf = np.array([], dtype=np.int16)
     rt_mgr.send(sock, data)
     try:

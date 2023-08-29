@@ -16,7 +16,7 @@ rt_mgr.start_session(callback)
 sock = rt_mgr.connect()
 
 # create recorder
-rec = StreamlinkHelper(chunk_len=2, as_base64=True)
+rec = StreamlinkHelper(chunk_len=3, as_base64=True)
 rec.open_stream("https://www.youtube.com/watch?v=CjT5bF4Rk3U")
 rec.async_read()
 stop_sig = False
