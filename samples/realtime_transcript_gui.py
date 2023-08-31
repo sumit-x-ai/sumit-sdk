@@ -56,9 +56,14 @@ def transcribe(speech, state=""):
     rt_mgr.send(sock, data)
     try:
         ready = txt_buf.get(block=False)
-        if ready:
-            text = ready["txt"]
-            state += text + " "
+        while ready is not None:
+            if ready:
+                text = ready["txt"]
+                state += text + " "
+            try:
+                ready = txt_buf.get(block=False)
+            except:
+                break
     except:
         pass
     return state, state
