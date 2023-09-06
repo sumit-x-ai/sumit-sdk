@@ -6,9 +6,9 @@ storage = Storage(api)
 
 # An example of uploading a file to storage
 
-filename = "0309/my_file.wav"  # The path + and the name of the file that will appear in the storage.
+filename = "<PATH_TO_FILE_IN_STORAGE>"  # The path + and the name of the file that will appear in the storage.
 
-path = "/home/my_computer/path_to_wav_file.wav"  # path from my computer
+path = "<YOUR_FILE_NAME>"  # path from my computer
 
 exp = 10  # hors
 
@@ -17,27 +17,21 @@ print(res)
 
 # An example of uploading a multi files to storage
 
-filepaths_names = ["folder_A/file1.wav", "folder_A/file2.wav", "folder_A/file3.wav"]
-
-files_paths = ["file1.wav", "file2.wav", "file3.wav"]
-
-res = storage.upload_multi(filepaths_names, files_paths)
+dict_of_files = {"<PATH_TO_FILE_IN_STORAGE_1>": "<YOUR_LOCAL_FILE_PATH_1>",
+                 "<PATH_TO_FILE_IN_STORAGE_2>": "<YOUR_LOCAL_FILE_PATH_2>",
+                 "<PATH_TO_FILE_IN_STORAGE_3>": "<YOUR_LOCAL_FILE_PATH_3>"}
+# SHLOMI: If this way is fine, then we can cancel upload func
+res = storage.upload_multi(dict_of_files)
 print(res)
 
 # An example of deleting a file from storage
 
-filename = "company_name/folder_A/file2.wav"
+filename = "<FULL_PATH_TO_FILE_IN_STORAGE>"
 res = storage.delete_file(filename)
 print(res)
 
 # An example NO. 1 of getting list of files from storage
 
-folder_name = "company_name"
-res = storage.files_list(folder_name)
-print(res)
-
-# An example NO. 2 of getting list of files from storage
-
-folder_name = "company_name/folder_A"
-res = storage.files_list(folder_name)
+folder_name = "<PATH_TO_FOLDER_NAME>"
+res = storage.list_files(folder_name)
 print(res)

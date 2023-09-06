@@ -16,14 +16,14 @@ class Storage(BaseWrapper):
     - delete_file(): Delete file from storage.
     - files_list(): Get list of all existing files in the storage.
     """
-    _UPLOAD_FILE = "upload"
-    _UPLOAD_MULTI_FILES = "uploads_multi"
-    _DELETE_FILE = "delete"
-    _GET_FILE_LIST = "files_list"
+    _UPLOAD_FILE = "storage/upload"
+    _UPLOAD_MULTI_FILES = "storage/uploads_multi"
+    _DELETE_FILE = "storage/delete"
+    _GET_FILE_LIST = "storage/list_files"
 
     def __init__(self, api_instance) -> None:
         """
-        Initializes the RealtimeSTT.
+        Initializes the Storage.
 
         Args:
         - api_instance (APIClient): An instance of the APIClient class.
@@ -48,62 +48,61 @@ class Storage(BaseWrapper):
         }
 
         resource = requests.put(signed_url, headers=headers, data=file_content)
-        return resource.status_code == 200
+        if resource.status_code != 200:
+            raise Exception("Failed to upload the file. Status code:", resource.status_code)
 
-    def upload(self, filename: str, path: str, exp: int = None) -> dict:
+        return True
+
+    def upload(self, filename: str, path: str, expiration: int = None) -> dict:
         """
         Upload a file to storage with a signed URL.
 
         Args:
-            - filename (srt): The path + and the name of the file that will appear in the storage.
+            - filename (srt): Full path of the file that will appear in the storage.
             - path (srt): path to the uploade file.
-            -exp (int): [Optional] expiration of the signed URL.(Between 1-24 hours, Default - 1 hour)
+            - expiration (int): [Optional] expiration of the signed URL.(Between 1-24 hours, Default - 1 hour)
 
        Returns:
            - dict: Contains the details sent and the requested result
         """
         req = {}
-        if exp:
-            req['exp'] = exp
+        if expiration:
+            req['exp'] = expiration
 
         req['filename'] = filename
         data = self.api.safe_call(Storage._UPLOAD_FILE, req).json()
         signed_url = data.get("signed_url")
-        res = False
         if signed_url:
-            res = self._upload(signed_url, path)
-
-        if not res:
-            raise Exception("Failed to upload the file.")
+            self._upload(signed_url, path)
 
         return data
 
-    def upload_multi(self, filepaths_names: list[str], filepaths: list[str], exp: int = None) -> dict:
+    def upload_multi(self, dict_of_files: dict, expiration: int = None) -> dict:
         """
         Upload files to storage with a signed URL.
 
         Args:
-            - filepaths_names (list[str]):each cell contains the path + the name
-                                of the file that will appear in the storage.
-            - filepaths (list[srt]): Each cell contains path to the uploade file.
-            -exp (int): [Optional] expiration of the signed URL.(Between 1-24 hours, Default - 1 hour)
+            - dict_of_files (dict): key -> full path to the file that will appear in the storage.
+                                    val -> path to local file.
+            - expiration (int): [Optional] expiration of the signed URL.(Between 1-24 hours, Default - 1 hour)
 
        Returns:
            - dict: Contains the details sent and the requested result
        """
         req = {}
-        if exp:
-            req['exp'] = exp
-        req['files'] = filepaths_names
-
+        if expiration:
+            req['exp'] = expiration
+        req['local_files'] = list(dict_of_files.values())
+        req['storage_path'] = list(dict_of_files.keys())
         data = self.api.safe_call(Storage._UPLOAD_MULTI_FILES, req).json()
         signed_urls = data.get('signed_urls')
-        not_upload = []
+        not_upload = {}
         if signed_urls:
-            for signed_url, file in zip(signed_urls, filepaths):
-                res = self._upload(signed_url, file)
-                if not res:
-                    not_upload.append(file)
+            for val in signed_urls:
+                try:
+                    self._upload(val, signed_urls[val])
+                except Exception as e:
+                    not_upload[signed_urls[val]] = e
 
         data['uploads_failed'] = not_upload
         return data
@@ -114,19 +113,18 @@ class Storage(BaseWrapper):
 
         Args:
             - filename (str):  full path to the file.
-              - note: file path must start from the root folder of the client
 
        Returns:
            - dict: Contains the details sent and the requested result
         """
         return self.api.safe_call(Storage._DELETE_FILE, {"filename": filename}).json()
 
-    def files_list(self, folder_name: str) -> dict:
+    def list_files(self, folder_name: str) -> dict:
         """
         Get list of all existing files in the storage.
         Args:
-            -folder_name (str): path to the desired folder
-             - note: file path must start from the root folder of the client
+            - folder_name (str): path to the desired folder
+
         Returns:
            - dict: Contains the details sent and the requested result
         """
