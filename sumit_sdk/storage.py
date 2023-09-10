@@ -51,7 +51,7 @@ class Storage(BaseWrapper):
 
         resource = requests.put(signed_url, headers=headers, data=file_content)
         if resource.status_code != 200:
-            raise Exception("Failed to upload the file. Status code:", resource.status_code)
+            raise Exception("Failed to upload the file. Status code:", resource.content)
 
         return True
 
@@ -79,12 +79,12 @@ class Storage(BaseWrapper):
 
         return data
 
-    def upload_multi(self, dict_of_files: dict, expiration: int = None) -> dict:
+    def upload_multi(self, remote_to_local_map: dict, expiration: int = None) -> dict:
         """
         Upload files to storage with a signed URL.
 
         Args:
-            - dict_of_files (dict): key -> full path to the file that will appear in the storage.
+            - remote_to_local_map (dict): key -> full path to the file that will appear in the storage.
                                     val -> path to local file.
             - expiration (int): [Optional] expiration of the signed URL.(Between 1-24 hours, Default - 1 hour)
 
@@ -94,8 +94,7 @@ class Storage(BaseWrapper):
         req = {}
         if expiration:
             req['expiration'] = expiration
-        req['local_files'] = list(dict_of_files.values())
-        req['storage_path'] = list(dict_of_files.keys())
+        req['remote_to_local_map'] = remote_to_local_map
         data = self.api.safe_call(Storage._UPLOAD_MULTI_FILES, req).json()
         signed_urls = data.get('signed_urls')
         not_upload = {}
