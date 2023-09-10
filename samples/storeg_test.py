@@ -17,11 +17,11 @@ print(res)
 
 # An example of uploading a multi files to storage
 
-dict_of_files = {"<PATH_TO_FILE_IN_STORAGE_1>": "<YOUR_LOCAL_FILE_PATH_1>",
+remote_to_local_map = {"<PATH_TO_FILE_IN_STORAGE_1>": "<YOUR_LOCAL_FILE_PATH_1>",
                  "<PATH_TO_FILE_IN_STORAGE_2>": "<YOUR_LOCAL_FILE_PATH_2>",
                  "<PATH_TO_FILE_IN_STORAGE_3>": "<YOUR_LOCAL_FILE_PATH_3>"}
 # SHLOMI: If this way is fine, then we can cancel upload func
-res = storage.upload_multi(dict_of_files)
+res = storage.upload_multi(remote_to_local_map)
 print(res)
 
 # An example of deleting a file from storage
