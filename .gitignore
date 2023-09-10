@@ -4,3 +4,4 @@ dist/
 */api-sa*.json
 *.egg-info/
 __pycache__/
+venv
