@@ -10,7 +10,7 @@ filename = "<PATH_TO_FILE_IN_STORAGE>"  # The path + and the name of the file th
 
 path = "<YOUR_FILE_NAME>"  # path from my computer
 
-exp = 10  # hors
+exp = 10  # hours
 
 res = storage.upload(filename, path, exp)
 print(res)
@@ -20,7 +20,6 @@ print(res)
 dict_of_files = {"<PATH_TO_FILE_IN_STORAGE_1>": "<YOUR_LOCAL_FILE_PATH_1>",
                  "<PATH_TO_FILE_IN_STORAGE_2>": "<YOUR_LOCAL_FILE_PATH_2>",
                  "<PATH_TO_FILE_IN_STORAGE_3>": "<YOUR_LOCAL_FILE_PATH_3>"}
-# SHLOMI: If this way is fine, then we can cancel upload func
 res = storage.upload_multi(dict_of_files)
 print(res)
 

@@ -11,8 +11,8 @@ class BaseTask(BaseWrapper):
     Abstract class to implement API calls for tasks.
 
     Methods:
-    - start_session(): Starts a new session and stores its details.
-    - stop_session(session_id): Stops an existing session.
+    - execute(): run new task, with custom payload.
+    - build_request(**kwargs): create payload for the request.
     - get_active_sessions(): Returns the currently active sessions.
     """
     _API_VERSION = 'v3'
@@ -26,8 +26,8 @@ class BaseTask(BaseWrapper):
         """        
         super().__init__(api_instance)
         self._operation = None
+        self._wait_interval = 5
         self._set_op()
-        self._wait_interval = 3
     
     def _set_op(self):
         raise Exception("_set_op not implemented")
@@ -45,6 +45,10 @@ class BaseTask(BaseWrapper):
         return self.execute(self.build_request(**kwargs))
 
     def get_task_status(self, task_id: str):
+        """
+        get the status of async task, by task_id.
+        task_id returned from the response: response['response']['job_id']
+        """
         ret = self.api.safe_call(TaskOperations.GET_STATUS, {
             'id': task_id
         })
@@ -52,12 +56,16 @@ class BaseTask(BaseWrapper):
         return ret
     
     def wait_for_task(self, task_id: str):
+        """
+        blocking function to wait until task is done.
+        alternatively, you can use `callback` to get notified when task is done
+        """
         finish = False
         ret = None
         while not finish:
             try:
                 ret = self.get_task_status(task_id)
-                finish = ret['progress'] == 100
+                finish = ret['response']['progress'] == 100
                 if finish:
                     break
             except:
