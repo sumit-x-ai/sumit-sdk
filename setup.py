@@ -7,7 +7,10 @@ setup(
     install_requires=[
         "requests",
         "websocket-client",
-        "retry"
+        "retry",
+        "python-socketio",
+        "numpy",
+        "PyAudio"
     ],
     author="Sumit-AI",
     author_email="shlomi@sumit-ai.com",
