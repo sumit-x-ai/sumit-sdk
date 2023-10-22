@@ -1,7 +1,7 @@
 from sumit_sdk.base_task import BaseTask, TaskOperations 
 
 class SupportedModels:
-    GENERIC_HEBREW = "he_gen"
+    GENERIC_HEBREW = "he_gen_v2"
 
 class Transcript(BaseTask):
     """
