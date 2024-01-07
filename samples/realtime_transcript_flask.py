@@ -1,21 +1,34 @@
 import time
 from sumit_sdk.api import APIClient
 from sumit_sdk.realtime_stt import RealtimeSTT
-from sumit_sdk.realtime_stt import Profiles
+from sumit_sdk.realtime_stt import Profiles, VadProfile
 from sumit_sdk.utils.audio_helper import Recorder  # helper class to async record from microphone
-from flask import Flask, request, Response, json
-
-app = Flask(__name__)
+from flask import Flask, request, Response, json, render_template
+from threading import Thread
+app = Flask(__name__, template_folder='webui')
 
 # initialize API
-api = APIClient("api-sa-prod.json", env="prod")  # create client
+api = APIClient("api-sa.json", env="dev")  # create client
 rt_mgr = RealtimeSTT(api)  # create realtime manager
+transcriptions = []
+
+@app.route('/', methods=['POST', 'GET'])
+def index(**kwargs):
+    return render_template('index.html')
+
+@app.route('/transcription')
+def suggestions():
+    return render_template('transcript.html', transcriptions=transcriptions)
+
+Thread(target=lambda: app.run(host="127.0.0.1", port=5000, debug=False)).start()
 
 # start session
 def callback(data):
+    global transcriptions
     print(data['txt'][::-1])  # Reverse for proper view of Hebrew in terminal. 
+    transcriptions.append(data['txt'])
 
-rt_mgr.start_session(callback, profile=Profiles.default)
+rt_mgr.start_session(callback, profile=Profiles.default, vad_profile=VadProfile.default) 
 
 sock = rt_mgr.connect()
 
@@ -38,13 +51,3 @@ while sock.connected and not stop_sig:
 rt_mgr.stop_session()
 rec.stop()
 
-@app.route('/rt', methods=['POST'])
-def add_user(**kwargs):
-    name = "add_user"
-    section = tag.SECTION.FUNCTION
-    fields, regex = get_regex_and_validation_regex(name, section)
-    return general_request(mang._add_user, fields, regex=regex,
-                           **kwargs)
-
-
-app.run(host="127.0.0.1", port=5000)
