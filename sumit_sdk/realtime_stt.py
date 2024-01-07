@@ -10,6 +10,13 @@ class Profiles:
     accurate = 'accurate'  # Est. latency: 5 seconds
     very_accurate = 'very_accurate'  # Est. latency: 7 seconds
 
+class VadProfile:
+    default = 'default'
+    high = 'high'
+    low = 'low'
+    very_low = 'very_low'
+    off = 'off'
+
 class RealtimeSTT(BaseWrapper):
     """
     Manages realtime sessions.
@@ -39,7 +46,7 @@ class RealtimeSTT(BaseWrapper):
         self.current_session = None
         self.transcript_callback = None
 
-    def start_session(self, transcript_callback, language:str=None, profile:str=None) -> dict:
+    def start_session(self, transcript_callback, language:str=None, profile:str=None, vad_profile:str=None, _add_params=None) -> dict:
         """
         Starts a new session and stores its details.
 
@@ -57,6 +64,11 @@ class RealtimeSTT(BaseWrapper):
             req['lang'] = language
         if profile:
             req['profile'] = profile
+        if vad_profile:
+            req['vad_profile'] = vad_profile
+        if _add_params:
+            req.update(_add_params)
+        print(req)
         data = self.api.safe_call(RealtimeSTT._START_EP, req).json()
         session_id = data.get("session_id")
         self.sessions[session_id] = data

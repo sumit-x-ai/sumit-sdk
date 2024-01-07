@@ -15,13 +15,14 @@ class Recorder:
         self._ab64 = as_base64
         self._buff = queue.Queue()
     
-    def start(self):
+    def start(self, in_dev=None):
         self._p = pyaudio.PyAudio()
         self._stream = self._p.open(format=self.FORMAT,
                     channels=self.CHANNELS,
                     rate=self.RATE,
                     input=True,
                     frames_per_buffer=self.CHUNK,
+                    input_device_index=in_dev,
                     stream_callback=self._fill_buffer)
     
     def stop(self):

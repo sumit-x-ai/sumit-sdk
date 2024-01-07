@@ -10,7 +10,7 @@ import scipy.signal as sps
 from scipy import signal
 
 # initialize API
-api = APIClient("api-sa.json", env="dev")  # create client
+api = APIClient("api-sa-prod.json", env="prod")  # create client
 rt_mgr = RealtimeSTT(api)  # create realtime manager
 
 # start session
@@ -19,7 +19,7 @@ def callback(data):
     txt_buf.put(data)
 
 rt_mgr.start_session(callback)
-# rt_mgr._inject_session("e4713083-cf3d-4445-bb41-2de7fe9ec9ed", "e4713083cf3d4445bb412de7fe9ec9ed.sumit-labs-dev.com", callback)
+# rt_mgr._inject_session("01b02af5-98e8-4fbf-b934-a88621ca0161", "01b02af598e84fbfb934a88621ca0161.sumit-labs-dev.com", callback)
 sock = rt_mgr.connect()
 
 # create recorder GUI
