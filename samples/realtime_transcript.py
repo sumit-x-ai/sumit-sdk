@@ -12,7 +12,7 @@ rt_mgr = RealtimeSTT(api)  # create realtime manager
 def callback(data):
     print(data['txt'][::-1])  # Reverse for proper view of Hebrew in terminal. 
 
-rt_mgr.start_session(callback, profile=Profiles.default, vad_profile=VadProfile.default) 
+rt_mgr.start_session(callback, profile=Profiles.default, vad_profile=VadProfile.low) 
 
 sock = rt_mgr.connect()
 

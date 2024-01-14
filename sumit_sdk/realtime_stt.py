@@ -5,8 +5,8 @@ import json
 
 class Profiles:
     default = 'default'  # Est. latency: 3 seconds
-    low_latency = 'low_latency'  # Est. latency: 2 seconds
-    lower_latency = 'lower_latency'  # Est. latency: 1 seconds
+    low_latency = 'low_latency'  # Est. latency: 2.5 seconds
+    lower_latency = 'lower_latency'  # Est. latency: 1.5 seconds
     accurate = 'accurate'  # Est. latency: 5 seconds
     very_accurate = 'very_accurate'  # Est. latency: 7 seconds
 
@@ -16,6 +16,10 @@ class VadProfile:
     low = 'low'
     very_low = 'very_low'
     off = 'off'
+
+class BufferMode:
+    default = 'accumulate'
+    switch = 'switch'
 
 class RealtimeSTT(BaseWrapper):
     """
@@ -46,7 +50,7 @@ class RealtimeSTT(BaseWrapper):
         self.current_session = None
         self.transcript_callback = None
 
-    def start_session(self, transcript_callback, language:str=None, profile:str=None, vad_profile:str=None, _add_params=None) -> dict:
+    def start_session(self, transcript_callback, language:str=None, profile:str=None, vad_profile:str=None, buffer_mode=None, _add_params=None) -> dict:
         """
         Starts a new session and stores its details.
 
@@ -55,6 +59,8 @@ class RealtimeSTT(BaseWrapper):
         - language (str): language code. default is he-IL (Hebrew)
         - profile (str): one of `realtime_stt.Profiles` - control the latency and accuracy of the transcription. 
             usually the higher the latency, higher the accuracy 
+        - vad_profile (str): one of `realtime_stt.VadProfiles` - control the VAD thresholds to avoid non-speech transcription. 
+        - buffer_mode (str): one of `realtime_stt.BufferMode` - control the buffering method for the speech context.
 
         Returns:
         - dict: containing the session ID and its corresponding URL.
@@ -66,6 +72,8 @@ class RealtimeSTT(BaseWrapper):
             req['profile'] = profile
         if vad_profile:
             req['vad_profile'] = vad_profile
+        if buffer_mode:
+            req['buffer_mode'] = buffer_mode
         if _add_params:
             req.update(_add_params)
         print(req)
