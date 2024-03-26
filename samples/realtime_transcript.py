@@ -11,7 +11,7 @@ rt_mgr = RealtimeSTT(api)  # create realtime manager
 
 # start session
 def callback(data):
-    print(data['txt'][::-1])  # Reverse for proper view of Hebrew in terminal. 
+    print('\u202b' + data['txt'] + '\u202c' )  # Reverse for proper view of Hebrew in terminal. 
 
 rt_mgr.start_session(callback, profile=Profiles.accurate, vad_profile=VadProfile.low, buffer_mode=BufferMode.default) 
 

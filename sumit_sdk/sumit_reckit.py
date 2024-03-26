@@ -29,17 +29,19 @@ class Reckit(BaseWrapper):
         data = self.api.safe_call(Reckit._START_EP, req).json()
         return data
 
-    def platform_process(self, rec_id, kit_id, wav_files:list[str], part_ix:int=0, 
+    def platform_process(self, rec_id, kit_id, wav_files:list[str], duration=None, part_ix:int=0, 
         name:str=None, lang='he-IL', out_lang=None, offset:float=0, is_last=False):
         req = {
             'id': rec_id,
             'kit_id': kit_id,
             'part_ix': part_ix,
-            'part_offset': offset,
+            'samplerate': 16000,
+            'offset': offset,
             'wav_files': wav_files,
-            'in_lang': lang,
-            'out_lang': out_lang if out_lang else [lang],
-            'is_last': is_last
+            'input_lang': lang,
+            'output_lang': out_lang if out_lang else [lang],
+            'last': is_last, 
+            'duration': duration
         }
         if name:
             req['name'] = name

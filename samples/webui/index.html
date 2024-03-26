@@ -1,37 +1,55 @@
 <!DOCTYPE html>
-
-<html>
-
+<html lang="en" dir="rtl">
 <head>
-    <title>transcription</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-time Text Generation</title>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <style>
+        body, html {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: white;
+		direction: rtl; 
+        }
+        #tv {
+            width: 85%;
+            height: 65%;
+            background-color: black;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: justify;
+            font-size: calc(10px + 1.5vw); /* Adjust font size based on screen width */
+            padding: 20px;
+            box-sizing: border-box;
+            border-radius: 20px; /* Gives the TV-like rounded corners */
+        }
+    </style>
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', (event) => {
+            var socket = io();
+
+            socket.on('connect', function() {
+                console.log('Connected to server');
+            });
+
+            socket.on('update_texts', function(data) {
+                // Handle the array of texts
+                const texts = data.texts;
+                const textDisplay = texts.join('<br>');
+                document.getElementById('tv').innerHTML = textDisplay;
+            });
+        });
+    </script>
 </head>
-
 <body>
-
-Search: <input type="text" id="search_form_input"></input>
-
-<div id="place_for_transcription"></div>
-
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-
-<script>
-$("#search_form_input").keyup(function(){
-    var text = $(this).val();
-
-    $.ajax({
-      url: "/transcription",
-      type: "get",
-      data: {jsdata: text},
-      success: function(response) {
-        $("#place_for_transcription").html(response);
-      },
-      error: function(xhr) {
-        //Do Something to handle error
-      }
-    });
-});
-</script>
-
+    <div id="tv">מיד מתחילים</div>
 </body>
-
 </html>
+
