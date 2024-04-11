@@ -13,6 +13,11 @@ rt_mgr = RealtimeSTT(api)  # create realtime manager
 def callback(data):
     print('\u202b' + data['txt'] + '\u202c' )  # Reverse for proper view of Hebrew in terminal. 
 
+def write_segments_callbcak(data):
+    with open('out.txt', 'a') as fd:
+        fd.write(f'{time.time()}\t\t{data['txt']}\n')
+    print('\u202b' + data['txt'][::-1] + '\u202c' )
+
 rt_mgr.start_session(callback, profile=Profiles.accurate, vad_profile=VadProfile.low, buffer_mode=BufferMode.default) 
 
 sock = rt_mgr.connect()
