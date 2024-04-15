@@ -39,7 +39,10 @@ class Recorder:
     
     def _fill_buffer(self, in_data, frame_count, time_info, status):
         d = np.frombuffer(in_data, np.int16)
-        audio = (d / np.abs(d).max())*(2**15-1)
+        if np.abs(d).max() > 0:
+            audio = (d / np.abs(d).max())*(2**15-1)
+        else:
+            audio = d
         audio = audio.astype(np.int16)
         if self._ab64:
             audio = base64.b64encode(audio.tobytes())

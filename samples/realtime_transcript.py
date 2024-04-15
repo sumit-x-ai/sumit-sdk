@@ -11,14 +11,19 @@ rt_mgr = RealtimeSTT(api)  # create realtime manager
 
 # start session
 def callback(data):
-    print(data['txt'][::-1])  # Reverse for proper view of Hebrew in terminal. 
+    print('\u202b' + data['txt'] + '\u202c' )  # Reverse for proper view of Hebrew in terminal. 
 
-rt_mgr.start_session(callback, profile=Profiles.default, vad_profile=VadProfile.very_low, buffer_mode=BufferMode.switch) 
+def write_segments_callbcak(data):
+    with open('out.txt', 'a') as fd:
+        fd.write(f'{time.time()}\t\t{data['txt']}\n')
+    print('\u202b' + data['txt'][::-1] + '\u202c' )
+
+rt_mgr.start_session(callback, profile=Profiles.accurate, vad_profile=VadProfile.low, buffer_mode=BufferMode.default) 
 
 sock = rt_mgr.connect()
 
 # create recorder
-rec = Recorder(as_base64=True, buffer_sec=3)  # encode samples as base64, to send the chunks over web-socket
+rec = Recorder(as_base64=True, buffer_sec=2.5)  # encode samples as base64, to send the chunks over web-socket
 rec.start()
 stop_sig = False
 while sock.connected and not stop_sig:

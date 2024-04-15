@@ -18,7 +18,9 @@ print(res)
 
 config = transcripter.build_request(remote_filename, output_filename, 
     language='he-IL', model=SupportedModels.GENERIC_HEBREW, 
-    flat_output_path=flat_output_filename)
+    flat_output_path=flat_output_filename, 
+    # multichannel_diarize=True, group_by_speaker=True,  # set true to diarize speakers based on audio channels
+    )
 
 ret = transcripter.execute(config)
 print(ret)

@@ -14,6 +14,7 @@ class Transcript(BaseTask):
     def build_request(self, file_path: str, output_path: str,
             language:str, model:str=None, 
             flat_output_path: str=None, bucket_name: str=None, output_wav_path:str=None,
+            multichannel_diarize=False, multichannel_mix=False, group_by_speaker=False,
             callback=None
             ):
         """
@@ -38,6 +39,12 @@ class Transcript(BaseTask):
             request['bucket_name'] = bucket_name
         if output_wav_path:
             request['output_wav_path'] = output_wav_path
+        if multichannel_diarize:
+            request['multichannel'] = {"diarize": True}
+            if multichannel_mix:
+                request['multichannel']['params'] = {'merge_type': 'mix'}
+        if group_by_speaker:
+            request['group_by'] = 'speaker'
         if callback and isinstance(callback, str) and callback.startswith("https://"):
             request['callback'] = callback
         return request
