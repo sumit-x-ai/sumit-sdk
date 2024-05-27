@@ -1,9 +1,9 @@
 from sumit_sdk.api import APIClient    # API core client
 from sumit_sdk.storage import Storage  # to upload files from local machine to our bucket
-from sumit_sdk.transcript import Transcript, SupportedModels
+from sumit_sdk.transcript import Transcript, SupportedModels, SupportedDiarization
 
 # initialize API
-api = APIClient("api-sa.json", env="dev")  # create client
+api = APIClient("api-sa.json")  # create client
 transcripter = Transcript(api)
 
 # upload file to storage
@@ -17,9 +17,10 @@ res = storage.upload(remote_filename, local_filename)
 print(res)
 
 config = transcripter.build_request(remote_filename, output_filename, 
-    language='he-IL', model=SupportedModels.GENERIC_HEBREW, 
+    language='he-IL', model=SupportedModels.HEBREW_LEGAL, 
     flat_output_path=flat_output_filename, 
     # multichannel_diarize=True, group_by_speaker=True,  # set true to diarize speakers based on audio channels
+    # diarize=SupportedDiarization.UNSUPERVISED, min_speakers=2, max_speakers=4, group_by_speaker=True,  # use unsupervised speaker diarization
     )
 
 ret = transcripter.execute(config)

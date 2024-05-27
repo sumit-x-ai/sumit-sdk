@@ -1,5 +1,5 @@
 # API endpoints:
-api_url=https://api.sumit-labs-dev.com
+api_url=https://api.sumit-labs.com
 login_ep=login
 upload_ep=storage/upload
 download_ep=storage/download
