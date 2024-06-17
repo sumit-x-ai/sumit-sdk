@@ -10,7 +10,8 @@ setup(
         "retry",
         "python-socketio",
         "numpy",
-        "PyAudio"
+        "PyAudio",
+        "pyalsaaudio"
     ],
     author="Sumit-AI",
     author_email="shlomi@sumit-ai.com",
