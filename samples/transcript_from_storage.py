@@ -3,7 +3,7 @@ from sumit_sdk.storage import Storage  # to upload files from local machine to o
 from sumit_sdk.transcript import Transcript, SupportedModels, SupportedDiarization
 
 # initialize API
-api = APIClient("api-sa.json")  # create client
+api = APIClient("api-sa-prod.json")  # create client
 transcripter = Transcript(api)
 
 # upload file to storage
