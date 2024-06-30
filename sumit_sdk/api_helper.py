@@ -40,7 +40,7 @@ class APIHelper:
     
     @retry(tries=3, delay=10)
     def try_login(self):
-        t = requests.post(os.path.join(self.api_url, APIEPS.login), json=self.login_sa)
+        t = requests.post(f"{self.api_url}/{APIEPS.login}", json=self.login_sa)
         self.token = t.json()['token']
         print(self.token)
     
@@ -69,7 +69,7 @@ class APIHelper:
         if not self.token:
             self.login()
         try:
-            ret = requests.post(os.path.join(self.api_url, endpoint), json=data, headers={"Authorization": f"Bearer {self.token}"})
+            ret = requests.post(f"{self.api_url}/{endpoint}", json=data, headers={"Authorization": f"Bearer {self.token}"})
             if ret.status_code == self.invalid_token_code:
                 self.token = None
                 self.login()

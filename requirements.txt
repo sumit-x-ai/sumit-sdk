@@ -1,0 +1,5 @@
+requests
+websocket-client
+retry
+python-socketio
+numpy

@@ -27,3 +27,9 @@ Open a terminal and navigate to the directory where the zip file was extracted. 
 ```sh
 cd path/to/extracted/folder
 python setup.py install
+```
+
+
+#### Install on Windows  
+installation of: PyAudio, pyalsaaudio may failed in Windows. In this case the installation of all required library will failed. So in this case please install the required packages via pip: 
+```pip install -r requirements.txt```  

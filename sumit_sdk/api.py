@@ -16,7 +16,7 @@ class APIClient(APIHelper):
         - dict: The response from the API.
         """            
         headers = {"Authorization": f"Bearer {self.token}"}
-        response = requests.get(os.path.join(self.api_url, endpoint), json=json_data, headers=headers)
+        response = requests.get(f"{self.api_url}/{endpoint}", json=json_data, headers=headers)
         return response.json()
     
     def _post_data(self, endpoint: str, json_data: dict={}):
@@ -31,7 +31,7 @@ class APIClient(APIHelper):
         - dict: The response from the API.
         """        
         headers = {"Authorization": f"Bearer {self.token}"}
-        response = requests.post(os.path.join(self.api_url, endpoint), json=json_data, headers=headers)
+        response = requests.post(f"{self.api_url}/{endpoint}", json=json_data, headers=headers)
         return response.json()
     
 class BaseWrapper:
