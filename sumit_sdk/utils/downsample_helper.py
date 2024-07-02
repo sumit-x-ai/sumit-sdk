@@ -13,7 +13,7 @@ class Downsampler:
         self.filter_b, self.filter_a = butter(order, normal_cutoff, btype='low', analog=False)
 
     def downsample_audio(self, audio, original_fs, target_fs):
-        filtered_audio = lfilter(self.filter_b, self.filter_a, data)
+        filtered_audio = lfilter(self.filter_b, self.filter_a, audio)
         # Calculate the number of samples in the downsampled audio
         num_samples = int(len(filtered_audio) * target_fs / original_fs)
 
