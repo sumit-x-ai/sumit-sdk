@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.signal import butter, lfilter, resample
+from scipy.signal import butter, lfilter, resample, resample_poly
 
 class Downsampler:
     def __init__(self):
@@ -21,3 +21,9 @@ class Downsampler:
         downsampled_audio = resample(filtered_audio, num_samples)
 
         return downsampled_audio
+
+    @staticmethod
+    def resample_poly(audio, original_fs, target_fs):
+        filtered = resample_poly(audio, up=target_fs, down=original_fs)
+        filtered = filtered.astype(audio.dtype)
+        return filtered
