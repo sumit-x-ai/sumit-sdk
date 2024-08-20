@@ -78,6 +78,8 @@ class Recorder:
                 for c in range(audio.shape[0]):
                     fa.append(self.downsample_func(audio[c,:], self.RATE, self.OUT_RATE))
                 audio = np.array(fa, dtype=audio.dtype)
+            else:
+                audio = self.downsample_func(audio, self.RATE, self.OUT_RATE)
         audio = audio.astype(np.int16)
         if self._ab64:
             audio = base64.b64encode(audio.tobytes())
