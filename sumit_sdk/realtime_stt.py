@@ -113,7 +113,7 @@ class RealtimeSTT(BaseWrapper):
             raise Exception("failed to stop session")
         if session_id in self.sessions:
             self.sessions.pop(session_id)
-        if session_id == self.current_session:
+        if ret.get('success') and session_id == self.current_session:
             self.current_session = None
         return ret
 
