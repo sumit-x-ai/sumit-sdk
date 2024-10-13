@@ -113,6 +113,9 @@ class RealtimeSTT(BaseWrapper):
             raise Exception("failed to stop session")
         if session_id in self.sessions:
             self.sessions.pop(session_id)
+        if ret.get('success') and session_id == self.current_session:
+            self.current_session = None
+        return ret
 
     def get_active_sessions(self) -> dict:
         """
