@@ -50,9 +50,20 @@ class Recorder:
                     input_device_index=in_dev,
                     stream_callback=self._fill_buffer)
     
+    def stream_is_active(self):
+        if not self._stream:
+            return False
+        try:
+            return self._stream.get_time()
+        except:
+            return False
+    
     def stop(self):
-        self._stream.stop_stream()
-        self._stream.close()
+        try:
+            self._stream.stop_stream()
+            self._stream.close()
+        except:
+            pass
         self._p.terminate()
     
     def safe_get(self):
