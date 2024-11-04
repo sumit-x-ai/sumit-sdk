@@ -13,7 +13,7 @@ class APIEPS:
     realtime_update = 'realtime/set_status'
 
 class APIHelper:
-    def __init__(self, cred_path: str, env="prod") -> None:
+    def __init__(self, cred_path: str, env="prod", onprem=False) -> None:
         """
         Initializes the APIHelper.
 
@@ -21,7 +21,10 @@ class APIHelper:
         - cred_path (str): The credential json path
         - env (str): api environment. can be 'dev' or 'prod'. default is 'prod'
         """        
-        self.api_url = API_URL[env]
+        if onprem and env not in API_URL:
+            self.api_url = env
+        else:
+            self.api_url = API_URL[env]
         self.token = None
         self.invalid_token_code = 401
         try:

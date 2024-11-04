@@ -30,7 +30,7 @@ class Recorder:
     
     def start(self, in_dev=None):
         self._p = pyaudio.PyAudio()
-        if in_dev and not self.RATE:
+        if in_dev is not None and not self.RATE:
             inf = self._p.get_device_info_by_index(in_dev)
             self.RATE = int(inf['defaultSampleRate'])
             print("set rate to", self.RATE)
