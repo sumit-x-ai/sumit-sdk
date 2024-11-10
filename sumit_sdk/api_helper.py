@@ -81,3 +81,20 @@ class APIHelper:
             return ret
         except:
             pass
+
+    def safe_call_args(self, endpoint: str, re_login=True, **kwargs):
+        """
+        same as safe_call, with flexible arguments for request
+        """            
+        if not self.token:
+            self.login()
+        try:
+            ret = requests.post(f"{self.api_url}/{endpoint}", headers={"Authorization": f"Bearer {self.token}"}, **kwargs)
+            if ret.status_code == self.invalid_token_code:
+                self.token = None
+                self.login()
+                if re_login:
+                    return self.safe_call(endpoint, re_login=False, **kwargs)
+            return ret
+        except:
+            pass

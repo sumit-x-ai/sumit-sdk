@@ -17,12 +17,13 @@ class Storage(BaseWrapper):
     - files_list(): Get list of all existing files in the storage.
     """
     _UPLOAD_FILE = "storage/upload"
+    _SA_UPLOAD_FILE = "storage_sa/upload"
     _UPLOAD_MULTI_FILES = "storage/uploads_multi"
     _DELETE_FILE = "storage/delete"
     _DOWNLOAD_FILE = "storage/download"
     _GET_FILE_LIST = "storage/list_files"
 
-    def __init__(self, api_instance) -> None:
+    def __init__(self, api_instance, sa=False) -> None:
         """
         Initializes the Storage.
 
@@ -30,6 +31,14 @@ class Storage(BaseWrapper):
         - api_instance (APIClient): An instance of the APIClient class.
         """
         super().__init__(api_instance)
+        self._sa = sa
+    
+    def _sa_upload(self, filename: str, path: str) -> dict:
+        with open(path, 'rb') as file:
+            files = {'file': file}
+            _map = {"filename": filename}
+            ret = self.api.safe_call_args(self._SA_UPLOAD_FILE, files=files, data={'request': json.dumps(_map)})
+            return ret
 
     def _upload(self, signed_url: str, path: str) -> bool:
         """
@@ -67,6 +76,9 @@ class Storage(BaseWrapper):
        Returns:
            - dict: Contains the details sent and the requested result
         """
+        if self._sa:
+            return self._sa_upload(filename, path)
+        
         req = {}
         if expiration:
             req['expiration'] = expiration
