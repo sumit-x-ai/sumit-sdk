@@ -21,6 +21,7 @@ class APIHelper:
         - cred_path (str): The credential json path
         - env (str): api environment. can be 'dev' or 'prod'. default is 'prod'
         """        
+        self._env = env
         if onprem and env not in API_URL:
             self.api_url = env
         else:
