@@ -9,7 +9,10 @@ from typing import Callable
 class StreamSTT(BaseWrapper):
     # Endpoint for stream authentication
     _START_EP = "stream/auth"
-    _URL = "wss://stream.sumit-labs-dev.com:443"
+    _URL = {
+        "dev": "wss://stream.sumit-labs-dev.com:443",
+        "prod": "wss://stream.sumit-labs.com:443",
+    }
 
     def __init__(self, api_instance, message_callback: Callable[[dict], None]) -> None:
         """
@@ -116,7 +119,7 @@ class StreamSTT(BaseWrapper):
             if not self.session_token:
                 raise Exception("Failed to retrieve session token")
             if not self.url:
-                self.url = response.get("url", StreamSTT._URL)
+                self.url = response.get("url", StreamSTT._URL[self._env])
         return self.session_token
 
     def send_audio(self, audio_path: str, audio_id: str) -> None:

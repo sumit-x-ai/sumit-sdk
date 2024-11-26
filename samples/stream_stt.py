@@ -5,13 +5,13 @@ from sumit_sdk.strean_stt import StreamSTT
 
 
 def print_stt(data):
-    print(f"response: {data}")
+    # print(f"response: {data}")
     transcript = data["transcript"][0]
     print(f"{data['id']}: {transcript['segment']}\nstart:{transcript['start']}\tend:{transcript['end']}")
 
 
 # initialize API
-api = APIClient("api-sa-prod.json", env="dev")  # create client
+api = APIClient("api-sa-dev.json", env="dev")  # create client
 
 stt = StreamSTT(api, print_stt)
 stt.start()
