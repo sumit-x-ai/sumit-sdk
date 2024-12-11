@@ -4,6 +4,8 @@ from sumit_sdk.api import BaseWrapper
 import base64
 import websocket
 from typing import Callable
+import librosa
+import numpy as np
 
 
 class StreamSTT(BaseWrapper):
@@ -13,6 +15,7 @@ class StreamSTT(BaseWrapper):
         "dev": "wss://stream.sumit-labs-dev.com:443",
         "prod": "wss://stream.sumit-labs.com:443",
     }
+    _SR = 16000
 
     def __init__(self, api_instance, message_callback: Callable[[dict], None]) -> None:
         """
@@ -26,10 +29,10 @@ class StreamSTT(BaseWrapper):
         self.callback = message_callback  # Callback function to handle incoming messages
         self.session_token = None  # Token for session authentication
         self._listen_event = Event()  # Event to signal when WebSocket connection is open
-        self._env = api_instance._env  # Environment (e.g., 'dev' or 'prod') # TODO: check : For wath?
+        self._env = api_instance._env  # Environment (e.g., 'dev' or 'prod')
         self.ws = None  # WebSocket instance
         self._listener_thread = None  # Thread for running WebSocket
-        self.url = None  # לדעתי עדיף שנקבל אותו דרך ה-API. # TODO: SHLOMI
+        self.url = None 
 
     @staticmethod
     def _encode_audio(audio_path: str) -> str:
@@ -46,9 +49,10 @@ class StreamSTT(BaseWrapper):
             Exception: If there is an error while decoding the audio file.
         """
         try:
-            with open(audio_path, "rb") as audio_file:
-                audio_data = audio_file.read()
-            return base64.b64encode(audio_data).decode()
+            audio_data, _ = librosa.load(audio_path, sr=StreamSTT._SR, mono=True)
+            audio_data *= (2 ** 15) - 1
+            audio_data = audio_data.astype(np.int16)
+            return base64.b64encode(audio_data.tobytes())
         except Exception as e:
             raise Exception(f"Error decoding audio: {e}")
 
@@ -122,30 +126,39 @@ class StreamSTT(BaseWrapper):
                 self.url = response.get("url", StreamSTT._URL[self._env])
         return self.session_token
 
-    def send_audio(self, audio_path: str, audio_id: str) -> None:
+    def send_audio(self, audio_id: str, audio_data=None, audio_path: str=None, audio_byte_buffer=None) -> None:
         """
         Send an audio file through the WebSocket connection.
 
         Args:
-            audio_path (str): The file path of the audio to be sent.
             audio_id (str): The unique identifier for the audio file.
+            audio_path (str): The file path of the audio to be sent.
+            audio_data (np.array): The audio buffer to be sent. should be 16bps, 16kHz, mono audio
 
         Raises:
             Exception: If the WebSocket is not connected or if there is an error sending the audio.
         """
         if not self.ws or not self.ws.sock.connected:
             raise Exception("WebSocket is not connected")
-        encoded_audio = self._encode_audio(audio_path)
+        encoded_audio = None
+        if audio_path:
+            encoded_audio = self._encode_audio(audio_path)
+        elif audio_data is not None:
+            encoded_audio = base64.b64encode(audio_data.tobytes())
+        elif audio_byte_buffer is not None:
+            encoded_audio = base64.b64encode(audio_byte_buffer)
+        else:
+            raise Exception("must provide one of: audio_path, audio_data, audio_byte_buffer")
         req = {
             "id": audio_id,
             "token": self.session_token,
-            "data": encoded_audio,
+            "data": encoded_audio.decode(),
         }
         try:
             self.ws.send(json.dumps(req))
         except Exception as e:
             raise Exception(f"Error sending audio: {e}")
-
+    
     def listen(self) -> None:
         """
         Start listening to a WebSocket server.

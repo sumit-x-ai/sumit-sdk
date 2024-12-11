@@ -6,3 +6,5 @@ dist/
 __pycache__/
 venv
 releases
+samples/out_*.txt
+samples/*.srt
