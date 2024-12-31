@@ -5,6 +5,7 @@ import time
 class TaskOperations:
     TRANSCRIPT = 'transcript'
     GET_STATUS = 'get_status'
+    TRANSLATE_API = 'translate'
 
 class BaseTask(BaseWrapper):
     """
