@@ -1,7 +1,9 @@
 from sumit_sdk.base_task import BaseTask, TaskOperations 
 
 class SupportedModels:
-    GENERIC_HEBREW = "he_gen_v2"
+    DEPRECAT_GENERIC_HEBREW_v2 = "he_gen_v2"
+    GENERIC_HEBREW = "he_gen_v3"
+    GENERIC_HEBREW_BETA = "he_gen_v4"
     HEBREW_LEGAL = "hg2_legal"
     HEBREW_SUBTITLES = "hg2_subs"
     HEBREW_INTERVIEW = "hg2_interview"
