@@ -13,7 +13,7 @@ app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app)
 
 # initialize API
-api = APIClient("api-sa.json", env="dev")  # create client
+api = APIClient("api-sa.json")  # create client
 rt_mgr = RealtimeSTT(api)  # create realtime manager
 transcriptions = []
 

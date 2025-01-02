@@ -4,7 +4,6 @@ import os
 from retry import retry
 
 API_URL = {
-    "dev": "https://api.sumit-labs-dev.com",
     "prod": "https://api.sumit-labs.com",
 }
 
@@ -19,7 +18,7 @@ class APIHelper:
 
         Args:
         - cred_path (str): The credential json path
-        - env (str): api environment. can be 'dev' or 'prod'. default is 'prod'
+        - env (str): api environment. 'prod' for cloud env. default is 'prod'
         """        
         self._env = env
         if onprem and env not in API_URL:

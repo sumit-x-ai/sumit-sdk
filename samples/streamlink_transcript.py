@@ -4,7 +4,7 @@ from sumit_sdk.realtime_stt import RealtimeSTT, Profiles
 from sumit_sdk.utils.streamlink_helper import StreamlinkHelper   # helper class to async record from URLs
 
 # initialize API
-api = APIClient("api-sa.json", env="dev")  # create client
+api = APIClient("api-sa.json")  # create client
 rt_mgr = RealtimeSTT(api)  # create realtime manager
 
 # start session

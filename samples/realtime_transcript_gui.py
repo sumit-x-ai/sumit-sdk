@@ -10,7 +10,7 @@ import scipy.signal as sps
 from scipy import signal
 
 # initialize API
-api = APIClient("api-sa-prod.json", env="prod")  # create client
+api = APIClient("api-sa-prod.json")  # create client
 rt_mgr = RealtimeSTT(api)  # create realtime manager
 
 # start session

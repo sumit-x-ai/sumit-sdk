@@ -1,7 +1,7 @@
 from sumit_sdk.api import APIClient
 from sumit_sdk.storage import Storage
 
-api = APIClient("api-sa.json", env="dev")  # create client
+api = APIClient("api-sa.json")  # create client
 storage = Storage(api)
 
 # An example of uploading a file to storage

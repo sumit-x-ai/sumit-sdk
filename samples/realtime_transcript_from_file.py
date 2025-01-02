@@ -35,7 +35,7 @@ class FileRecorder(Recorder):
         self.stop_sig.set()
 
 # initialize API
-api = APIClient("api-sa.json", env="dev")  # create client
+api = APIClient("api-sa.json")  # create client
 rt_mgr = RealtimeSTT(api)  # create realtime manager
 
 # start session
