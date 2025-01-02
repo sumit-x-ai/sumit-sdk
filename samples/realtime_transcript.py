@@ -6,7 +6,7 @@ from sumit_sdk.realtime_stt import BufferMode
 from sumit_sdk.utils.audio_helper import Recorder  # helper class to async record from microphone
 
 # initialize API
-api = APIClient("api-sa.json", env="dev")  # create client
+api = APIClient("api-sa.json")  # create client
 rt_mgr = RealtimeSTT(api)  # create realtime manager
 
 # start session
