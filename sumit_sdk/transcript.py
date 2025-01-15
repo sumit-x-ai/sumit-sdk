@@ -1,4 +1,5 @@
-from sumit_sdk.base_task import BaseTask, TaskOperations 
+from sumit_sdk.base_task import BaseTask, TaskOperations
+
 
 class SupportedModels:
     DEPRECAT_GENERIC_HEBREW_v2 = "he_gen_v2"
@@ -8,8 +9,10 @@ class SupportedModels:
     HEBREW_SUBTITLES = "hg2_subs"
     HEBREW_INTERVIEW = "hg2_interview"
 
+
 class SupportedDiarization:
     UNSUPERVISED = 'unsupervised'
+
 
 class Transcript(BaseTask):
     """
@@ -18,14 +21,14 @@ class Transcript(BaseTask):
 
     def _set_op(self):
         self._operation = TaskOperations.TRANSCRIPT
-    
+
     def build_request(self, file_path: str, output_path: str,
-            language:str, model:str=None, 
-            flat_output_path: str=None, bucket_name: str=None, output_wav_path:str=None,
-            multichannel_diarize=False, multichannel_mix=False, group_by_speaker=False,
-            diarize=None, min_speakers=None, max_speakers=None,
-            callback=None
-            ):
+                      language: str, model: str = None,
+                      flat_output_path: str = None, bucket_name: str = None, output_wav_path: str = None,
+                      multichannel_diarize=False, multichannel_mix=False, group_by_speaker=False,
+                      diarize=None, min_speakers=None, max_speakers=None,
+                      callback=None, transcribe_first=True, fine_timing=True
+                      ):
         """
         Args:
             - file_path (str): the file location on the storage to transcript. Must upload the file to storage, use sumit_sdk.storage
@@ -72,4 +75,3 @@ class Transcript(BaseTask):
         if callback and isinstance(callback, str) and callback.startswith("https://"):
             request['callback'] = callback
         return request
-
