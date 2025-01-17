@@ -27,7 +27,7 @@ class Transcript(BaseTask):
                       flat_output_path: str = None, bucket_name: str = None, output_wav_path: str = None,
                       multichannel_diarize=False, multichannel_mix=False, group_by_speaker=False,
                       diarize=None, min_speakers=None, max_speakers=None,
-                      callback=None, transcribe_first=True, fine_timing=True
+                      callback=None, diarize_first=None, fine_timing=None
                       ):
         """
         Args:
@@ -43,6 +43,8 @@ class Transcript(BaseTask):
             - diarize (str) - one of `SupportedDiarization` methods for speakers diarization
             - min_speakers (int) - for `SupportedDiarization.UNSUPERVISED` method, specify the minimun number of speakers in this record. leave None if unknown
             - max_speakers (int) - for `SupportedDiarization.UNSUPERVISED` method, specify the maximum number of speakers in this record. leave None if unknown
+            - diarize_first (bool|None) - diarize before transcription. may improve speaker diarization but reduce transciption accuracy. leave None for system default (False)
+            - fine_timing (bool|None) - use 2nd phase of forced alignment process to make words timestamps more accurate. leave None for system default (True if split_subtitles is True else False)
         """
         request = {
             "path": file_path,
@@ -72,6 +74,10 @@ class Transcript(BaseTask):
                 request['diarize_param'] = {}
         if group_by_speaker:
             request['group_by'] = 'speaker'
+        if diarize_first is not None:
+            request['transcribe_first'] = not diarize_first
+        if fine_timing is not None:
+            request['fine_timing'] = fine_timing
         if callback and isinstance(callback, str) and callback.startswith("https://"):
             request['callback'] = callback
         return request
