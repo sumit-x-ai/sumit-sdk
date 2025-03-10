@@ -1,4 +1,5 @@
-from sumit_sdk.base_task import BaseTask, TaskOperations 
+from sumit_sdk.base_task import BaseTask, TaskOperations
+
 
 class SupportedModels:
     DEPRECAT_GENERIC_HEBREW_v2 = "he_gen_v2"
@@ -8,8 +9,10 @@ class SupportedModels:
     HEBREW_SUBTITLES = "hg2_subs"
     HEBREW_INTERVIEW = "hg2_interview"
 
+
 class SupportedDiarization:
     UNSUPERVISED = 'unsupervised'
+
 
 class Transcript(BaseTask):
     """
@@ -18,14 +21,15 @@ class Transcript(BaseTask):
 
     def _set_op(self):
         self._operation = TaskOperations.TRANSCRIPT
-    
+
     def build_request(self, file_path: str, output_path: str,
-            language:str, model:str=None, 
-            flat_output_path: str=None, bucket_name: str=None, output_wav_path:str=None,
-            multichannel_diarize=False, multichannel_mix=False, group_by_speaker=False,
-            diarize=None, min_speakers=None, max_speakers=None,
-            callback=None
-            ):
+                      language: str, model: str = None,
+                      flat_output_path: str = None, bucket_name: str = None, output_wav_path: str = None,
+                      multichannel_diarize=False, multichannel_mix=False, group_by_speaker=False,
+                      diarize=None, min_speakers=None, max_speakers=None,
+                      callback=None, diarize_first=None, fine_timing=None,
+                      callback_once=None
+                      ):
         """
         Args:
             - file_path (str): the file location on the storage to transcript. Must upload the file to storage, use sumit_sdk.storage
@@ -40,6 +44,9 @@ class Transcript(BaseTask):
             - diarize (str) - one of `SupportedDiarization` methods for speakers diarization
             - min_speakers (int) - for `SupportedDiarization.UNSUPERVISED` method, specify the minimun number of speakers in this record. leave None if unknown
             - max_speakers (int) - for `SupportedDiarization.UNSUPERVISED` method, specify the maximum number of speakers in this record. leave None if unknown
+            - diarize_first (bool|None) - diarize before transcription. may improve speaker diarization but reduce transciption accuracy. leave None for system default (False)
+            - fine_timing (bool|None) - use 2nd phase of forced alignment process to make words timestamps more accurate. leave None for system default (True if split_subtitles is True else False)
+            - callback_once (bool|None) - notify the callback only once, when job finished. do not send updates for every stage. leave None for system default (False)
         """
         request = {
             "path": file_path,
@@ -69,7 +76,12 @@ class Transcript(BaseTask):
                 request['diarize_param'] = {}
         if group_by_speaker:
             request['group_by'] = 'speaker'
+        if diarize_first is not None:
+            request['transcribe_first'] = not diarize_first
+        if fine_timing is not None:
+            request['fine_timing'] = fine_timing
         if callback and isinstance(callback, str) and callback.startswith("https://"):
             request['callback'] = callback
+        if callback_once is not None:
+            request['callback_once'] = callback_once
         return request
-
