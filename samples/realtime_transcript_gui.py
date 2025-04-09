@@ -19,7 +19,6 @@ def callback(data):
     txt_buf.put(data)
 
 rt_mgr.start_session(callback)
-# rt_mgr._inject_session("01b02af5-98e8-4fbf-b934-a88621ca0161", "01b02af598e84fbfb934a88621ca0161.sumit-labs-dev.com", callback)
 sock = rt_mgr.connect()
 
 # create recorder GUI
