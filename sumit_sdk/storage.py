@@ -18,6 +18,7 @@ class Storage(BaseWrapper):
     """
     _UPLOAD_FILE = "storage/upload"
     _SA_UPLOAD_FILE = "storage_sa/upload"
+    _SA_DOWNLOAD_JSON = "storage_sa/download_json"
     _UPLOAD_MULTI_FILES = "storage/uploads_multi"
     _DELETE_FILE = "storage/delete"
     _DOWNLOAD_FILE = "storage/download"
@@ -179,6 +180,36 @@ class Storage(BaseWrapper):
         else:
             raise Exception(f"Failed to download the file. Status code: {response.status_code}, content: {response.content}")
 
+
+    def _download_sa(self, endpoint: str, data: dict, path: str, mode:str='t', chunk_size:int=8192) -> bool:
+        """
+        download file from storage.
+        Args:
+        - signed_url (str): a signed URL to the file location in the storage
+        - data (dict): request data, contains the remote filepath
+        - path (str): path to save the file
+        - mode (str): 't' for textual or 'b' for binary. [default 't']
+
+        Returns:
+        - bool: True if successful
+        """
+        response = requests.get(f"{self.api.api_url}/{endpoint}", json=data, headers={"Authorization": f"Bearer {self.api.token}"}, stream=True)
+        
+        if response.status_code == 200:
+            # Determine the write mode (text or binary)
+            write_mode = 'w' if mode == 't' else 'wb'
+
+            # Save the file locally
+            with open(path, write_mode) as file:
+                if mode == 't':
+                    file.write(response.text)
+                else:
+                    for chunk in response.iter_content(chunk_size=chunk_size):
+                        file.write(chunk)
+            return True
+        else:
+            raise Exception(f"Failed to download the file. Status code: {response.status_code}, content: {response.content}")
+
     def download(self, remote_filename: str, local_path: str, expiration: int = None, mode:str='t') -> dict:
         """
         Download a file from storage with a signed URL.
@@ -197,6 +228,8 @@ class Storage(BaseWrapper):
             req['expiration'] = expiration
 
         req['filename'] = remote_filename
+        if self._sa:
+            return self._download_sa(Storage._DOWNLOAD_FILE, req, local_path, mode )
         data = self.api.safe_call(Storage._DOWNLOAD_FILE, req).json()
         signed_url = data.get("url")
         if signed_url:

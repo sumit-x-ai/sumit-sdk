@@ -12,8 +12,8 @@ class StreamSTT(BaseWrapper):
     # Endpoint for stream authentication
     _START_EP = "stream/auth"
     _URL = {
-        "dev": "wss://stream.sumit-labs-dev.com:443",
         "prod": "wss://stream.sumit-labs.com:443",
+        "tenants": "wss://stream.{tenant}.sumit-labs.com",
     }
     _SR = 16000
 
@@ -33,6 +33,13 @@ class StreamSTT(BaseWrapper):
         self.ws = None  # WebSocket instance
         self._listener_thread = None  # Thread for running WebSocket
         self.url = None 
+        if self._env not in StreamSTT._URL:
+            if self._env.startswith('http'):
+                self.stream_url = f"wss://stream.{self._env.split('api.')[1]}:443"
+            else:
+                self.stream_url = StreamSTT._URL["tenants"].format(tenant=self._env)
+        else:
+            self.stream_url = StreamSTT._URL[self._env]
 
     @staticmethod
     def _encode_audio(audio_path: str) -> str:
@@ -123,7 +130,7 @@ class StreamSTT(BaseWrapper):
             if not self.session_token:
                 raise Exception("Failed to retrieve session token")
             if not self.url:
-                self.url = response.get("url", StreamSTT._URL[self._env])
+                self.url = response.get("url", self.stream_url)
         return self.session_token
 
     def send_audio(self, audio_id: str, audio_data=None, audio_path: str=None, audio_byte_buffer=None) -> None:

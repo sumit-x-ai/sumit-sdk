@@ -5,6 +5,7 @@ from retry import retry
 
 API_URL = {
     "prod": "https://api.sumit-labs.com",
+    "tenants": "https://api.{tenant}.sumit-labs.com",
 }
 
 class APIEPS:
@@ -21,8 +22,11 @@ class APIHelper:
         - env (str): api environment. 'prod' for cloud env. default is 'prod'
         """        
         self._env = env
-        if onprem and env not in API_URL:
-            self.api_url = env
+        if env not in API_URL:
+            if onprem and env.startswith('http'):
+                self.api_url = env
+            else:
+                self.api_url = API_URL["tenants"].format(tenant=env)
         else:
             self.api_url = API_URL[env]
         self.token = None

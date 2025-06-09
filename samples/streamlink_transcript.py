@@ -12,7 +12,6 @@ def callback(data):
     print(data['st'], data['txt'][::-1])  # Reverse for proper view of Hebrew in terminal. 
 
 rt_mgr.start_session(callback, profile=Profiles.very_accurate)
-# rt_mgr._inject_session("05fa3c71-2c6c-43b4-8c14-986270aed37c", "05fa3c712c6c43b48c14986270aed37c.sumit-labs-dev.com", callback)
 sock = rt_mgr.connect()
 
 # create recorder
