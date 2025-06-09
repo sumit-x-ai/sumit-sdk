@@ -22,13 +22,15 @@ Extract the downloaded zip file to a location of your choice. You can do this by
 
 ### Step 3: Install the SDK
 
-Open a terminal and navigate to the directory where the zip file was extracted. The SDK can be installed using `setup.py` by running the following command:
+Open a terminal and navigate to the directory where the zip file was extracted. The SDK can be installed using _pip_ by running the following command:
 
 ```sh
 cd path/to/extracted/folder
-python setup.py install
+pip install .
 ```
 
+_depracted:   
+using `setup.py` installation with: `python setup.py install` is depracted and not supported in new python versions_
 
 #### Install on Windows  
 installation of: PyAudio, pyalsaaudio may failed in Windows. In this case the installation of all required library will failed. So in this case please install the required packages via pip: 
