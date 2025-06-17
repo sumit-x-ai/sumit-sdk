@@ -85,7 +85,13 @@ class Storage(BaseWrapper):
             req['expiration'] = expiration
 
         req['filename'] = filename
-        data = self.api.safe_call(Storage._UPLOAD_FILE, req).json()
+        ret = self.api.safe_call(Storage._UPLOAD_FILE, req)
+        if ret.status_code != 200:
+            return {
+                "status_code": ret.status_code,
+                "content": ret.content
+            }
+        data = ret.json()
         signed_url = data.get("signed_url")
         if signed_url:
             self._upload(signed_url, path)

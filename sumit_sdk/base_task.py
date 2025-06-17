@@ -35,9 +35,21 @@ class BaseTask(BaseWrapper):
 
     def execute(self, payload):
         endpoint = f"{self._API_VERSION}/{self._operation}"
-        ret = self.api.safe_call(endpoint, payload)
-        ret = ret.json()
-        return ret
+        try:
+            ret = self.api.safe_call(endpoint, payload)
+        except Exception as e:
+            return {
+                'status_code': -1,
+                'content': str(e)
+            }
+        try:
+            ret = ret.json()
+            return ret
+        except:
+            return {
+                'status_code': ret.status_code,
+                'content': ret.content
+            }
 
     def build_request(self, **kwargs):
         raise Exception("build_request not implemented")

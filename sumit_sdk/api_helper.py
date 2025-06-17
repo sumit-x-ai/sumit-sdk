@@ -62,7 +62,7 @@ class APIHelper:
         except Exception as e:
             print(e)
     
-    def safe_call(self, endpoint: str, data: dict, re_login=True):
+    def safe_call(self, endpoint: str, data: dict, re_login=True, raise_on_failure=False):
         """
         Makes a safe POST request to the given API endpoint. if not logged in, or token is expired - automatically reconnect
 
@@ -84,7 +84,8 @@ class APIHelper:
                     return self.safe_call(endpoint, data, re_login=False)
             return ret
         except:
-            pass
+            if raise_on_failure:
+                raise
 
     def safe_call_args(self, endpoint: str, re_login=True, **kwargs):
         """

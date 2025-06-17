@@ -28,7 +28,7 @@ class Transcript(BaseTask):
                       multichannel_diarize=False, multichannel_mix=False, group_by_speaker=False,
                       diarize=None, min_speakers=None, max_speakers=None,
                       callback=None, diarize_first=None, fine_timing=None,
-                      callback_once=None,
+                      callback_once=None, callback_payload=None,
                       signed_url_file: str=None, return_transcript_in_callback: bool=False
                       ):
         """
@@ -48,6 +48,7 @@ class Transcript(BaseTask):
             - diarize_first (bool|None) - diarize before transcription. may improve speaker diarization but reduce transciption accuracy. leave None for system default (False)
             - fine_timing (bool|None) - use 2nd phase of forced alignment process to make words timestamps more accurate. leave None for system default (True if split_subtitles is True else False)
             - callback_once (bool|None) - notify the callback only once, when job finished. do not send updates for every stage. leave None for system default (False)
+            - callback_payload (dict|None) - payload to return when calling callback endpoint
             - signed_url_file (str|None) - download the file to transcript from signed url instead of bucket. In this case path should be empty string. This option required extra permissions
             - return_transcript_in_callback - return the transcript result in the callback payload instead of upload json file to bucket. This option required extra permissions
         """
@@ -87,6 +88,8 @@ class Transcript(BaseTask):
             request['callback'] = callback
         if callback_once is not None:
             request['callback_once'] = callback_once
+        if callback_payload is not None and isinstance(callback_payload, dict):
+            request['callback_payload'] = callback_payload
         if signed_url_file:
             request['signed_url'] = signed_url_file
         if return_transcript_in_callback and 'callback' in request:
