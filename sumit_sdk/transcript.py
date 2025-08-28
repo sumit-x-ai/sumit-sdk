@@ -3,11 +3,18 @@ from sumit_sdk.base_task import BaseTask, TaskOperations
 
 class SupportedModels:
     DEPRECAT_GENERIC_HEBREW_v2 = "he_gen_v2"
-    GENERIC_HEBREW = "he_gen_v3"
-    GENERIC_HEBREW_BETA = "he_gen_v4"
-    HEBREW_LEGAL = "hg2_legal"
-    HEBREW_SUBTITLES = "hg2_subs"
-    HEBREW_INTERVIEW = "hg2_interview"
+    GENERIC_HEBREW_v3 = "he_gen_v3"
+    GENERIC_HEBREW_v4 = "he_gen_v4"
+    GENERIC_HEBREW_v5 = "he_gen_v5"
+    GENERIC_HEBREW = "he_gen_v5"
+    GENERIC_HEBREW_TURBO = "he_v5_turbo"
+    HEBREW_LEGAL = "he_v5_legal"
+    HEBREW_PHONE = "he_v5_phone"
+    GENERIC_MULTILINGUAL_v3 = "multilang_gen_v3"
+    GENERIC_MULTILINGUAL_v2 = "multilang_gen"
+    DEPRECAT_HEBREW_LEGAL = "hg2_legal"
+    DEPRECAT_HEBREW_SUBTITLES = "hg2_subs"
+    DEPRECAT_HEBREW_INTERVIEW = "hg2_interview"
 
 
 class SupportedDiarization:

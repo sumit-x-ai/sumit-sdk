@@ -6,6 +6,7 @@ class TaskOperations:
     TRANSCRIPT = 'transcript'
     GET_STATUS = 'get_status'
     TRANSLATE_API = 'translate'
+    SUMMARY_API = 'summarize'
 
 class BaseTask(BaseWrapper):
     """
