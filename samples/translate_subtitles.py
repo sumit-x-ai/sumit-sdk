@@ -7,8 +7,8 @@ translate_sub = TranslateSubtitles(api)
 
 input_language = "he-IL"  # The language you would like the summary to be in.
 output_language = "en-US"  # The language you would like the results.
-filename = "a01.json"  # The path + and the name of the file that will appear in the storage.
-output_filename = "aaa.json"  # The path + and the name of the file that will save  the result in the storage.
+filename = "a01.json"  # The path of the file that will appear in the storage.
+output_filename = "aaa.json"  # The path of the file that will save the result in the storage.
 
 lines_num = 2
 max_chars = 36

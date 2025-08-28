@@ -16,7 +16,7 @@ class TranslateSubtitles(BaseTask):
 
         Args:
             output_lang: Target language for translation
-            input_blob_path: Path to an existing file in the bucket
+            input_blob_path: Path to an existing file in the bucket. Should be Sumit json format, grouped by subtitles
             output_blob_path: Path to the file to receive the translation
             input_lang: Source file language (if not given, the system will try to detect it itself)
             lines_num: Maximum lines in one subtitle
