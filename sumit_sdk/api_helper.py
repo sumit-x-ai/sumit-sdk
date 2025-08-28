@@ -31,6 +31,8 @@ class APIHelper:
             self.api_url = API_URL[env]
         self.token = None
         self.invalid_token_code = 401
+        if not os.path.exists(cred_path):
+            raise Exception(f"credential file doesn't exists: {cred_path}")
         try:
             print("load credentials")
             self.login_sa = self.load_cred(cred_path)

@@ -125,13 +125,26 @@ class StreamSTT(BaseWrapper):
         """
         if not self.session_token or reconnect:
             req = {}
-            response = self.api.safe_call(StreamSTT._START_EP, req).json()
-            self.session_token = response.get("token")
+            try:
+                response = self.api.safe_call(StreamSTT._START_EP, req)
+                if response.status_code != 200:
+                    return {
+                        "status_code": response.status_code,
+                        "content": response.content
+                    }
+                response = response.json()
+                self.session_token = response.get("token")
+            except Exception as e:
+                return {
+                        "status_code": -1,
+                        "content": str(e)
+                    }
             if not self.session_token:
                 raise Exception("Failed to retrieve session token")
             if not self.url:
                 self.url = response.get("url", self.stream_url)
-        return self.session_token
+        response['status_code'] = 0
+        return response
 
     def send_audio(self, audio_id: str, audio_data=None, audio_path: str=None, audio_byte_buffer=None) -> None:
         """
