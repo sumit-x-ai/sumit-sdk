@@ -42,5 +42,5 @@ for i in range(5):
 #     time.sleep(1)
 
 
-# time.sleep(10)
-# stt.stop_listening()
+time.sleep(10)
+stt.stop_listening()
