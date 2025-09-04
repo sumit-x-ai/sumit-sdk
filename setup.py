@@ -7,8 +7,6 @@ setup(
     name="sumit_sdk",
     # version="1.2.1",
     use_scm_version={
-        "write_to": "sumit_sdk/_version.py",
-        "write_to_template": '__version__ = "{version}"\n',
         "local_scheme": "no-local-version", 
     },
     setup_requires=['setuptools_scm'],
