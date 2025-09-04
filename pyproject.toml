@@ -35,6 +35,7 @@ dependencies = [
 
 [project.urls]
 Homepage = "https://www.sumit-x.com"
+Github = "https://github.com/sumit-x-ai/sumit-sdk"
 
 [project.optional-dependencies]
 audio = ["PyAudio", "pyalsaaudio"]
