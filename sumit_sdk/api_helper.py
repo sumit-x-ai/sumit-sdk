@@ -13,15 +13,17 @@ class APIEPS:
     realtime_update = 'realtime/set_status'
 
 class APIHelper:
-    def __init__(self, cred_path: str, env="prod", onprem=False) -> None:
+    def __init__(self, cred_path: str, env="prod", onprem=False, verify_ssl=None) -> None:
         """
         Initializes the APIHelper.
 
         Args:
         - cred_path (str): The credential json path
         - env (str): api environment. 'prod' for cloud env. default is 'prod'
+        - verify_ssl (bool | None): if False - ignore ssl verification and self-sigend urls.
         """        
         self._env = env
+        self.verify_ssl = verify_ssl
         if env not in API_URL:
             if onprem and env.startswith('http'):
                 self.api_url = env
@@ -49,7 +51,7 @@ class APIHelper:
     
     @retry(tries=3, delay=10)
     def try_login(self):
-        t = requests.post(f"{self.api_url}/{APIEPS.login}", json=self.login_sa)
+        t = requests.post(f"{self.api_url}/{APIEPS.login}", json=self.login_sa, verify=self.verify_ssl)
         self.token = t.json()['token']
         print(self.token)
     
@@ -78,7 +80,7 @@ class APIHelper:
         if not self.token:
             self.login()
         try:
-            ret = requests.post(f"{self.api_url}/{endpoint}", json=data, headers={"Authorization": f"Bearer {self.token}"})
+            ret = requests.post(f"{self.api_url}/{endpoint}", json=data, headers={"Authorization": f"Bearer {self.token}"}, verify=self.verify_ssl)
             if ret.status_code == self.invalid_token_code:
                 self.token = None
                 self.login()
@@ -96,7 +98,7 @@ class APIHelper:
         if not self.token:
             self.login()
         try:
-            ret = requests.post(f"{self.api_url}/{endpoint}", headers={"Authorization": f"Bearer {self.token}"}, **kwargs)
+            ret = requests.post(f"{self.api_url}/{endpoint}", headers={"Authorization": f"Bearer {self.token}"}, verify=self.verify_ssl, **kwargs)
             if ret.status_code == self.invalid_token_code:
                 self.token = None
                 self.login()
