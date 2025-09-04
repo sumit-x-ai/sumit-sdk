@@ -59,7 +59,7 @@ class Storage(BaseWrapper):
         # }
         headers = None
 
-        resource = requests.put(signed_url, headers=headers, data=file_content)
+        resource = requests.put(signed_url, headers=headers, data=file_content, verify=self.api.verify_ssl)
         if resource.status_code != 200:
             raise Exception("Failed to upload the file. Status code:", resource.content)
 
@@ -85,7 +85,13 @@ class Storage(BaseWrapper):
             req['expiration'] = expiration
 
         req['filename'] = filename
-        data = self.api.safe_call(Storage._UPLOAD_FILE, req).json()
+        ret = self.api.safe_call(Storage._UPLOAD_FILE, req)
+        if ret.status_code != 200:
+            return {
+                "status_code": ret.status_code,
+                "content": ret.content
+            }
+        data = ret.json()
         signed_url = data.get("signed_url")
         if signed_url:
             self._upload(signed_url, path)
@@ -145,7 +151,7 @@ class Storage(BaseWrapper):
         return self.api.safe_call(Storage._GET_FILE_LIST, {"folder_name": folder_name}).json()
     
     def _download_inmem(self, signed_url: str):
-        response = requests.get(signed_url, stream=True)
+        response = requests.get(signed_url, stream=True, verify=self.api.verify_ssl)
         if response.status_code == 200:
             return response.text
         else:
@@ -163,7 +169,7 @@ class Storage(BaseWrapper):
         Returns:
         - bool: True if successful
         """
-        response = requests.get(signed_url, stream=True)
+        response = requests.get(signed_url, stream=True, verify=self.api.verify_ssl)
         
         if response.status_code == 200:
             # Determine the write mode (text or binary)
@@ -193,7 +199,7 @@ class Storage(BaseWrapper):
         Returns:
         - bool: True if successful
         """
-        response = requests.get(f"{self.api.api_url}/{endpoint}", json=data, headers={"Authorization": f"Bearer {self.api.token}"}, stream=True)
+        response = requests.get(f"{self.api.api_url}/{endpoint}", json=data, headers={"Authorization": f"Bearer {self.api.token}"}, stream=True, verify=self.api.verify_ssl)
         
         if response.status_code == 200:
             # Determine the write mode (text or binary)
