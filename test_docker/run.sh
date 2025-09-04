@@ -1,0 +1,1 @@
+docker run -it -v $(pwd):/data -w /opt/sumit --net=host --add-host=sumit-ai.com=127.0.0.1 sumit_test:latest /bin/bash
