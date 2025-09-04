@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=61.0", "setuptools_scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sumit_sdk"
+dynamic = ["version"]
+authors = [
+    { name="Sumit-AI", email="shlomi@sumit-ai.com" },
+]
+description = "SDK to communicate with sumit API"
+readme = "README.md"
+requires-python = ">=3.8"
+license = "BSD-3-Clause" 
+license-files = ["LICENSE"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
+dependencies = [
+    "requests>=2.25.0",
+    "websocket-client>=1.5.0",
+    "retry>=0.9.2",
+    "python-socketio>=5.10.0",
+    "numpy>=1.24.0,<2.0.0",
+]
+
+[project.urls]
+Homepage = "https://www.sumit-x.com"
+
+[project.optional-dependencies]
+audio = ["PyAudio", "pyalsaaudio"]
+
+[tool.setuptools]
+packages = ["sumit_sdk"] # Or use find:
+# packages = { find = {} }
+
+[tool.setuptools_scm]
+local_scheme = "no-local-version"
