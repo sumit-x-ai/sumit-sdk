@@ -146,7 +146,7 @@ class StreamSTT(BaseWrapper):
         response['status_code'] = 0
         return response
 
-    def send_audio(self, audio_id: str, audio_data=None, audio_path: str=None, audio_byte_buffer=None) -> None:
+    def send_audio(self, audio_id: str, audio_data=None, audio_path: str=None, audio_byte_buffer=None, lid=False) -> None:
         """
         Send an audio file through the WebSocket connection.
 
@@ -174,6 +174,8 @@ class StreamSTT(BaseWrapper):
             "token": self.session_token,
             "data": encoded_audio.decode(),
         }
+        if lid:
+            req['lid'] = True
         try:
             self.ws.send(json.dumps(req))
         except Exception as e:
