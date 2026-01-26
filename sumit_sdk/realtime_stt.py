@@ -76,7 +76,6 @@ class RealtimeSTT(BaseWrapper):
             req['buffer_mode'] = buffer_mode
         if _add_params:
             req.update(_add_params)
-        print(req)
         data = self.api.safe_call(RealtimeSTT._START_EP, req).json()
         session_id = data.get("session_id")
         self.sessions[session_id] = data

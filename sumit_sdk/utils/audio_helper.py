@@ -33,7 +33,7 @@ class Recorder:
         if in_dev is not None and not self.RATE:
             inf = self._p.get_device_info_by_index(in_dev)
             self.RATE = int(inf['defaultSampleRate'])
-            print("set rate to", self.RATE)
+            # print("set rate to", self.RATE)
             self.CHUNK = int(self.RATE*self.TIME_BUFFER)
         if self.OUT_RATE < self.RATE:
             if self.zero_phase_lpf:

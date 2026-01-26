@@ -1,5 +1,5 @@
 import socketio
-from datetime import datetime
+import logging
 
 class SocketClient():
     def __init__(self, url, ssl_verify=False):
@@ -29,13 +29,13 @@ class SocketClient():
     def callbacks(self):
         @self.sio.event
         def connect():
-            print('Socket connected at %s' % datetime.utcnow())
+            logging.info(f'Socket connected')
             if not self.connected:
                 self.connected = True
 
         @self.sio.event
         def disconnect():
-            print('Socket disconnected at %s' % datetime.utcnow())
+            logging.info(f'Socket disconnected')
             self.connected = False
 
         @self.sio.on('*')  # wildcard to capture all events

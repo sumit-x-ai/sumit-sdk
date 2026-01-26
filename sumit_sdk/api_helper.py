@@ -2,6 +2,7 @@ import json
 import requests
 import os
 from retry import retry
+import logging
 
 API_URL = {
     "prod": "https://api.sumit-labs.com",
@@ -36,11 +37,10 @@ class APIHelper:
         if not os.path.exists(cred_path):
             raise Exception(f"credential file doesn't exists: {cred_path}")
         try:
-            print("load credentials")
+            logging.info("Sumit SDK load credentials")
             self.login_sa = self.load_cred(cred_path)
-            print(self.login_sa)
         except Exception as e:
-            print("failed to load credentials", e)
+            logging.error(f"failed to load credentials: {e}")
             return
         self.login()
 
@@ -53,7 +53,6 @@ class APIHelper:
     def try_login(self):
         t = requests.post(f"{self.api_url}/{APIEPS.login}", json=self.login_sa, verify=self.verify_ssl)
         self.token = t.json()['token']
-        print(self.token)
     
     def login(self):
         """
@@ -61,10 +60,9 @@ class APIHelper:
 
         """        
         try:
-            print("try login")
             self.try_login()
         except Exception as e:
-            print(e)
+            logging.error(f"Sumit: failed to login: {e}")
     
     def safe_call(self, endpoint: str, data: dict, re_login=True, raise_on_failure=False):
         """
