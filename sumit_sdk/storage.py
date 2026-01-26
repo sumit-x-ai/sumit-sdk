@@ -65,6 +65,34 @@ class Storage(BaseWrapper):
 
         return True
 
+    def get_upload_url(self, filename: str, expiration: int = None) -> dict:
+        """
+        create signed URL forupload.
+
+        Args:
+            - filename (srt): Full path of the file that will appear in the storage.
+            - expiration (int): [Optional] expiration of the signed URL.(Between 1-24 hours, Default - 1 hour)
+
+       Returns:
+           - dict: Contains the details sent and the requested result
+        """
+        req = {}
+        if expiration:
+            req['expiration'] = expiration
+
+        req['filename'] = filename
+        ret = self.api.safe_call(Storage._UPLOAD_FILE, req)
+        if ret.status_code != 200:
+            return {
+                "status_code": ret.status_code,
+                "content": ret.content
+            }
+        data = ret.json()
+        signed_url = data.get("signed_url")
+        if signed_url:
+            return data
+        return None
+
     def upload(self, filename: str, path: str, expiration: int = None) -> dict:
         """
         Upload a file to storage with a signed URL.
