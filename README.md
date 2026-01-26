@@ -10,6 +10,9 @@ Sumit SDK is a Python package that allows users to interact with Sumit-AI API. T
 
 ## Installation
 
+install from pip: `pip install sumit-sdk`  
+or uv: `uv pip install sumit_sdk`  
+
 ### Step 1: Download the SDK
 
 1. Navigate to the "Tags" section of the GitLab repository.
