@@ -58,7 +58,7 @@ class Recorder:
             length, in_data = self._stream.read()
             if length > 0:
                 audio = np.frombuffer(in_data, np.int16)
-                print(audio, audio.shape)
+                # print(audio, audio.shape)
                 # if np.abs(d).max() > 0:
                 #     audio = (d / np.abs(d).max()) * (2 ** 15 - 1)
                 # else:

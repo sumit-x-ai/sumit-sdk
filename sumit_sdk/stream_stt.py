@@ -6,6 +6,7 @@ import websocket
 from typing import Callable
 import librosa
 import numpy as np
+import logging
 
 
 class StreamSTT(BaseWrapper):
@@ -72,7 +73,7 @@ class StreamSTT(BaseWrapper):
             ws (WebSocketApp): The WebSocket application instance.
             error (str): Error message received from WebSocket.
         """
-        print(f"WebSocket error: {error}")
+        logging.error(f"WebSocket error: {error}")
 
     @staticmethod
     def _on_close(ws, close_status_code, close_msg) -> None:
@@ -84,7 +85,7 @@ class StreamSTT(BaseWrapper):
             close_status_code (int): The status code for closing the connection.
             close_msg (str): The closing message from WebSocket.
         """
-        print(f"WebSocket closed: {close_status_code}, {close_msg}")
+        logging.info(f"WebSocket closed: {close_status_code}, {close_msg}")
 
     def _on_message(self, ws, message) -> None:
         """
@@ -98,7 +99,7 @@ class StreamSTT(BaseWrapper):
             try:
                 self.callback(json.loads(message))
             except Exception as e:
-                print(f"Error in callback: {e}")
+                logging.error(f"Error in callback: {e}")
 
     def _on_open(self, ws) -> None:
         """
@@ -107,7 +108,7 @@ class StreamSTT(BaseWrapper):
         Args:
             ws (WebSocketApp): The WebSocket application instance.
         """
-        print("WebSocket connection opened")
+        logging.info("WebSocket connection opened")
         self._listen_event.set()  # Signal that the connection is open
 
     def start(self, reconnect: bool = False) -> str:
