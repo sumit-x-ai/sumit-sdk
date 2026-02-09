@@ -8,6 +8,7 @@ class TaskOperations:
     TRANSLATE_API = 'translate'
     TRANSLATE_SUBS = 'translate_subtitles'
     SUMMARY_API = 'summarize'
+    ANALYZE_API = 'transcript_analyze'
 
 class BaseTask(BaseWrapper):
     """
