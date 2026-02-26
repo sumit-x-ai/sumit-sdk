@@ -29,7 +29,7 @@ class AnalyzeApi(BaseTask):
             return AnalyzeOption.AVAILABLE_ANALYZE
         return AnalyzeOption.AVAILABLE_ANALYZE.get(key)
 
-    def build_request(self, requests: list, language: str = 'he-IL', sync: bool = False,
+    def build_request(self, requests: list, language: str = 'he-IL', 
                       input_blob_path: Optional[str] = None, output_blob_path: Optional[str] = None,
                       content: Optional[str] = None, bucket_name: Optional[str] = None,
                       callback: Optional[str] = None, callback_payload: Optional[dict] = None):
@@ -53,8 +53,7 @@ class AnalyzeApi(BaseTask):
             'input_blob_path': input_blob_path,
             'output_blob_path': output_blob_path,
             'callback': callback,
-            'callback_payload': callback_payload,
-            'sync': sync
+            'callback_payload': callback_payload
         }
 
         request.update({k: v for k, v in optional_params.items() if v is not None})
