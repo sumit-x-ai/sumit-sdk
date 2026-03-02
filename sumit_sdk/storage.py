@@ -1,3 +1,4 @@
+import os
 import requests
 import json
 from sumit_sdk.api import BaseWrapper
@@ -23,6 +24,8 @@ class Storage(BaseWrapper):
     _DELETE_FILE = "storage/delete"
     _DOWNLOAD_FILE = "storage/download"
     _GET_FILE_LIST = "storage/list_files"
+    _RESUMABLE_THRESHOLD = 2 * 1024 * 1024 * 1024  # 2 GB — use resumable upload above this
+    _UPLOAD_CHUNK_SIZE = 256 * 1024 * 1024           # 256 MB per chunk
 
     def __init__(self, api_instance, sa=False) -> None:
         """
@@ -41,9 +44,13 @@ class Storage(BaseWrapper):
             ret = self.api.safe_call_args(self._SA_UPLOAD_FILE, files=files, data={'request': json.dumps(_map)})
             return ret
 
-    def _upload(self, signed_url: str, path: str) -> bool:
+    def _upload(self, signed_url: str, path: str, resumable=False, file_size=None) -> bool:
         """
         Upload file to storage.
+        For files up to _RESUMABLE_THRESHOLD: stream directly with a single PUT.
+        For larger files: use GCS resumable upload — POST to initiate a session,
+        then PUT chunks with Content-Range headers. GCS assembles them natively.
+
         Args:
         - signed_url (str): a signed URL to the location of the storage folder
         - path (str): path to file to store
@@ -51,18 +58,33 @@ class Storage(BaseWrapper):
         Returns:
         - bool: True if successful
         """
-        with open(path, "rb") as file:
-            file_content = file.read()
-
-        # headers = {
-        #     'Content-Type': 'application/json',
-        # }
-        headers = None
-
-        resource = requests.put(signed_url, headers=headers, data=file_content, verify=self.api.verify_ssl)
-        if resource.status_code != 200:
-            raise Exception("Failed to upload the file. Status code:", resource.content)
-
+        if resumable:
+            # Upload chunks sequentially
+            with open(path, 'rb') as f:
+                offset = 0
+                while offset < file_size:
+                    chunk = f.read(Storage._UPLOAD_CHUNK_SIZE)
+                    if not chunk:
+                        break
+                    end = offset + len(chunk) - 1
+                    resp = requests.put(signed_url, data=chunk, headers={
+                        'Content-Length': str(len(chunk)),
+                        'Content-Range': f'bytes {offset}-{end}/{file_size}',
+                    }, verify=self.api.verify_ssl)
+                    if resp.status_code in (200, 201):
+                        return True
+                    elif resp.status_code == 308:  # Resume Incomplete — continue
+                        offset = end + 1
+                    else:
+                        raise Exception(f"Failed to upload chunk at offset {offset}. Status code: {resp.status_code}, content: {resp.content}")
+        else:
+            with open(path, "rb") as file:
+                file_content = file.read()
+            headers = None
+            resource = requests.put(signed_url, headers=headers, data=file_content, verify=self.api.verify_ssl)
+            if resource.status_code != 200:
+                raise Exception("Failed to upload the file. Status code:", resource.content)
+        
         return True
 
     def get_upload_url(self, filename: str, expiration: int = None) -> dict:
@@ -93,7 +115,7 @@ class Storage(BaseWrapper):
             return data
         return None
 
-    def upload(self, filename: str, path: str, expiration: int = None) -> dict:
+    def upload(self, filename: str, path: str, expiration: int = None, resumable_link: bool = None) -> dict:
         """
         Upload a file to storage with a signed URL.
 
@@ -101,6 +123,7 @@ class Storage(BaseWrapper):
             - filename (srt): Full path of the file that will appear in the storage.
             - path (srt): path to the uploade file.
             - expiration (int): [Optional] expiration of the signed URL.(Between 1-24 hours, Default - 1 hour)
+            - resumable_link (bool): [Optional] use resumable upload link. If None - use default setting
 
        Returns:
            - dict: Contains the details sent and the requested result
@@ -113,6 +136,10 @@ class Storage(BaseWrapper):
             req['expiration'] = expiration
 
         req['filename'] = filename
+        file_size = os.path.getsize(path)
+        resumable = resumable_link if resumable_link is not None else file_size > Storage._RESUMABLE_THRESHOLD
+        if resumable:
+            req['resumable'] = True
         ret = self.api.safe_call(Storage._UPLOAD_FILE, req)
         if ret.status_code != 200:
             return {
@@ -122,7 +149,7 @@ class Storage(BaseWrapper):
         data = ret.json()
         signed_url = data.get("signed_url")
         if signed_url:
-            self._upload(signed_url, path)
+            self._upload(signed_url, path, resumable, file_size)
 
         return data
 
