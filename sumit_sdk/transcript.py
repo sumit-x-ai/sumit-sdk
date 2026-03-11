@@ -20,6 +20,38 @@ class SupportedModels:
 class SupportedDiarization:
     UNSUPERVISED = 'unsupervised'
 
+class MultichannelDiarizeParam:
+    def __init__(self, auto_naming: bool = None, mic_arr_split_unsupervised: bool = None):
+        self.auto_naming = auto_naming
+        self.mic_arr_split_unsupervised = mic_arr_split_unsupervised
+
+    def to_dict(self):
+        d = {}
+        if self.auto_naming is not None:
+            d['auto_naming'] = self.auto_naming
+        if self.mic_arr_split_unsupervised is not None:
+            d['mic_arr_split_unsupervised'] = self.mic_arr_split_unsupervised
+        return d
+
+class MultichannelConfig:
+    def __init__(self,
+                 ignore_channels: list = None,
+                 channels_names: list = None,
+                 diarize_param: MultichannelDiarizeParam = None):
+        self.ignore_channels = ignore_channels
+        self.channels_names = channels_names
+        self.diarize_param = diarize_param
+
+    def to_dict(self):
+        d = {}
+        if self.ignore_channels is not None:
+            d['ignore_channels'] = self.ignore_channels
+        if self.channels_names is not None:
+            d['channels_names'] = self.channels_names
+        if self.diarize_param is not None:
+            d['diarize_param'] = self.diarize_param.to_dict()
+        return d
+
 
 class Transcript(BaseTask):
     """
@@ -32,11 +64,13 @@ class Transcript(BaseTask):
     def build_request(self, file_path: str, output_path: str,
                       language: str, model: str = None,
                       flat_output_path: str = None, bucket_name: str = None, output_wav_path: str = None,
-                      multichannel_diarize=False, multichannel_mix=False, group_by_speaker=False,
+                      multichannel_diarize=False, multichannel_mix=False, 
+                      group_by_speaker=False,
                       diarize=None, min_speakers=None, max_speakers=None,
                       callback=None, diarize_first=None, fine_timing=None,
                       callback_once=None, callback_payload=None,
-                      signed_url_file: str=None, return_transcript_in_callback: bool=False
+                      signed_url_file: str=None, return_transcript_in_callback: bool=False,
+                      multichannel_config: MultichannelConfig = None
                       ):
         """
         Args:
@@ -48,6 +82,7 @@ class Transcript(BaseTask):
             - callback (str) - URL to call when the task is done. must be valid HTTPS public url. 
             - multichannel_diarize (bool) - for multichannel audio file, use the channels for speakers separation
             - multichannel_mix (bool) - in case of multichannel audio, when using multichannel_diarize, mixdown all channels before transcription.
+            - multichannel_config (MultichannelConfig|None) - optional config for multichannel diarization (ignore_channels, channels_names, diarize_param). Only applied when multichannel_diarize is True.
             - group_by_speaker (bool) - for the nested transcription format, group the segments by speaker name
             - diarize (str) - one of `SupportedDiarization` methods for speakers diarization
             - min_speakers (int) - for `SupportedDiarization.UNSUPERVISED` method, specify the minimun number of speakers in this record. leave None if unknown
@@ -74,8 +109,13 @@ class Transcript(BaseTask):
             request['output_wav_path'] = output_wav_path
         if multichannel_diarize:
             request['multichannel'] = {"diarize": True}
+            params = {}
             if multichannel_mix:
-                request['multichannel']['params'] = {'merge_type': 'mix'}
+                params['merge_type'] = 'mix'
+            if multichannel_config is not None:
+                params.update(multichannel_config.to_dict())
+            if params:
+                request['multichannel']['params'] = params
         elif diarize:
             request['diarize'] = diarize
             if min_speakers and max_speakers:

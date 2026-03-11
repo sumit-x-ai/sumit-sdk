@@ -14,12 +14,12 @@ class APIEPS:
     realtime_update = 'realtime/set_status'
 
 class APIHelper:
-    def __init__(self, cred_path: str, env="prod", onprem=False, verify_ssl=None) -> None:
+    def __init__(self, cred_path, env="prod", onprem=False, verify_ssl=None) -> None:
         """
         Initializes the APIHelper.
 
         Args:
-        - cred_path (str): The credential json path
+        - cred_path (str|dict): The credential json path or dict object of the credentials
         - env (str): api environment. 'prod' for cloud env. default is 'prod'
         - verify_ssl (bool | None): if False - ignore ssl verification and self-sigend urls.
         """        
@@ -34,14 +34,19 @@ class APIHelper:
             self.api_url = API_URL[env]
         self.token = None
         self.invalid_token_code = 401
-        if not os.path.exists(cred_path):
-            raise Exception(f"credential file doesn't exists: {cred_path}")
-        try:
-            logging.info("Sumit SDK load credentials")
-            self.login_sa = self.load_cred(cred_path)
-        except Exception as e:
-            logging.error(f"failed to load credentials: {e}")
-            return
+        if isinstance(cred_path, dict):
+            self.login_sa = cred_path.copy()
+        elif isinstance(cred_path, str):
+            if not os.path.exists(cred_path):
+                raise Exception(f"credential file doesn't exists: {cred_path}")
+            try:
+                logging.info("Sumit SDK load credentials")
+                self.login_sa = self.load_cred(cred_path)
+            except Exception as e:
+                logging.error(f"failed to load credentials: {e}")
+                return
+        else:
+            raise Exception(f"cred_path should be json object (dict) or file path (str)")
         self.login()
 
     @retry(tries=3, delay=10)
