@@ -3,7 +3,7 @@ from sumit_sdk.storage import Storage  # to upload files from local machine to o
 from sumit_sdk.transcript import Transcript, SupportedModels, MultichannelConfig, MultichannelDiarizeParam
 
 # initialize API
-api = APIClient("../../keys/sdk/api-sa.json", env="https://api.sumit-labs-dev.com", onprem=True)  # create client
+api = APIClient("api-sa.json")  # create client
 transcripter = Transcript(api)
 
 # upload file to storage
