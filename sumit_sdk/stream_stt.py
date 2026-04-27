@@ -7,6 +7,7 @@ from typing import Callable
 import librosa
 import numpy as np
 import logging
+import ssl
 
 
 class StreamSTT(BaseWrapper):
@@ -18,7 +19,7 @@ class StreamSTT(BaseWrapper):
     }
     _SR = 16000
 
-    def __init__(self, api_instance, message_callback: Callable[[dict], None]) -> None:
+    def __init__(self, api_instance, message_callback: Callable[[dict], None], stream_url=None) -> None:
         """
         Initialize the StreamSTT instance.
 
@@ -34,7 +35,9 @@ class StreamSTT(BaseWrapper):
         self.ws = None  # WebSocket instance
         self._listener_thread = None  # Thread for running WebSocket
         self.url = None 
-        if self._env not in StreamSTT._URL:
+        if stream_url:
+            self.stream_url = stream_url
+        elif self._env not in StreamSTT._URL:
             if self._env.startswith('http'):
                 self.stream_url = f"wss://stream.{self._env.split('api.')[1]}:443"
             else:
@@ -182,7 +185,7 @@ class StreamSTT(BaseWrapper):
         except Exception as e:
             raise Exception(f"Error sending audio: {e}")
     
-    def listen(self) -> None:
+    def listen(self, ignore_ssl=False) -> None:
         """
         Start listening to a WebSocket server.
 
@@ -199,7 +202,14 @@ class StreamSTT(BaseWrapper):
             on_close=self._on_close,
             on_open=self._on_open,
         )
-        self._listener_thread = Thread(target=self.ws.run_forever, daemon=True)
+        kwargs = {}
+        if ignore_ssl:
+            kwargs = {
+                'sslopt': {
+                "cert_reqs": ssl.CERT_NONE,  # Ignores certificate verification requirement
+                "check_hostname": False      # Ignores hostname checking (useful for self-signed IPs/hostnames)
+            }}
+        self._listener_thread = Thread(target=self.ws.run_forever, daemon=True, kwargs=kwargs)
         self._listener_thread.start()
         self._listen_event.wait()  # Wait for WebSocket connection to open
 

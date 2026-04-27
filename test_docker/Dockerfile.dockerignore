@@ -1,3 +1,6 @@
 **/*.pyc
 **/__pycache__
 **/api-*.json
+build/
+dist/
+release/
