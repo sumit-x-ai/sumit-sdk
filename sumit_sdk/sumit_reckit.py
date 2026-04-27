@@ -33,7 +33,7 @@ class Reckit(BaseWrapper):
         return data
 
     def platform_process(self, rec_id, kit_id, wav_files:list[str], duration=None, part_ix:int=0, 
-        name:str=None, lang='he-IL', out_lang=None, offset:float=0, is_last=False):
+        name:str=None, lang='he-IL', out_lang=None, offset:float=0, is_last=False, tenant=None, algo_params=None):
         req = {
             'id': rec_id,
             'kit_id': kit_id,
@@ -48,6 +48,10 @@ class Reckit(BaseWrapper):
         }
         if name:
             req['name'] = name
+        if tenant:
+            req['tenant'] = tenant
+        if algo_params:
+            req['algo_params'] = algo_params
         data = self.api.safe_call(Reckit._PLAT_PROC_EP, req).json()
         return data
 
