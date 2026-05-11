@@ -9,7 +9,7 @@ class UsersAPI(BaseWrapper):
     """
     Manage user keys, quota and reports
     """
-    def usage_report(self, months:Optional[int]=12, days:Optional[int]=None, email:Optional[str]=None):
+    def usage_report(self, months:Optional[int]=12, days:Optional[int]=None, email:Optional[str]=None, stream_usage: bool=False):
         req = {
             'months': months
         }
@@ -17,6 +17,8 @@ class UsersAPI(BaseWrapper):
             req['days'] = days
         if email and isinstance(email, str):
             req['email'] = email
+        if stream_usage:
+            req['stream_usage'] = stream_usage
         data = self.api.safe_call(UsersAPI.USAGE_REPORT, req).json()
         return data
 
