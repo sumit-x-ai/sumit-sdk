@@ -20,11 +20,20 @@ if response.get('status_code') != 0:
     print(response)
     raise Exception("failed to retrieve session token. it's probably due to: incorrect user, missing permissions or networking issue.")
 
+# # to handle error and close events from the web socket - define your own callbacks 
+# def on_error(ws, error):
+#     print("error", ws, error)
+
+# def on_close(ws, close_status_code, close_msg):
+#     print("close", close_status_code, close_msg)
+    
+# stt.listen(on_close_callback=on_close, on_error_callback=on_error)
+
 stt.listen()
 
 print("send files:")
-for i in range(5):
-    stt.send_audio(f"audio_id_{i}", audio_path="/tmp/1.wav")  # send short audio file
+for i in range(20):
+    stt.send_audio(f"audio_id_{i}", audio_path="/tmp/1.wav")  # send short audio file. pass `reconnect_on_failure=True` to let the SDK handle socket connection failures
     time.sleep(1)
 
 # example 2: 

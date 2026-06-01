@@ -1,5 +1,6 @@
 import json
 from threading import Thread, Event
+import threading
 from sumit_sdk.api import BaseWrapper
 import base64
 import websocket
@@ -8,6 +9,7 @@ import librosa
 import numpy as np
 import logging
 import ssl
+import time
 
 
 class StreamSTT(BaseWrapper):
@@ -35,6 +37,9 @@ class StreamSTT(BaseWrapper):
         self.ws = None  # WebSocket instance
         self._listener_thread = None  # Thread for running WebSocket
         self.url = None 
+        self._reconnect_cooldown = 30
+        self._last_reconnect = 0
+        self._reconnect_lock = threading.Lock()
         if stream_url:
             self.stream_url = stream_url
         elif self._env not in StreamSTT._URL:
@@ -149,8 +154,20 @@ class StreamSTT(BaseWrapper):
                 self.url = response.get("url", self.stream_url)
         response['status_code'] = 0
         return response
+    
+    def _reconnect(self):
+        with self._reconnect_lock:
+            try:
+                self.stop_listening()
+            except:
+                pass
+            if time.time() - self._last_reconnect < self._reconnect_cooldown:
+                time.sleep(time.time() - self._last_reconnect)
+            self.start(True)
+        self._last_reconnect = time.time()
+        self.listen(self._ignore_ssl, self._on_error_callback, self._on_close_callback)
 
-    def send_audio(self, audio_id: str, audio_data=None, audio_path: str=None, audio_byte_buffer=None, lid=False) -> None:
+    def send_audio(self, audio_id: str, audio_data=None, audio_path: str=None, audio_byte_buffer=None, lid=False, reconnect_on_failure=False) -> None:
         """
         Send an audio file through the WebSocket connection.
 
@@ -162,8 +179,11 @@ class StreamSTT(BaseWrapper):
         Raises:
             Exception: If the WebSocket is not connected or if there is an error sending the audio.
         """
-        if not self.ws or not self.ws.sock.connected:
-            raise Exception("WebSocket is not connected")
+        if not self.ws or not self.ws.sock or not self.ws.sock.connected:
+            if reconnect_on_failure:
+                self._reconnect()
+            else:
+                raise Exception("WebSocket is not connected")
         encoded_audio = None
         if audio_path:
             encoded_audio = self._encode_audio(audio_path)
@@ -182,10 +202,15 @@ class StreamSTT(BaseWrapper):
             req['lid'] = True
         try:
             self.ws.send(json.dumps(req))
+        except websocket.WebSocketConnectionClosedException:
+            if reconnect_on_failure:
+                self._reconnect()
+            else:
+                raise Exception(f"connection closed and reconnection is false: {e}")
         except Exception as e:
             raise Exception(f"Error sending audio: {e}")
     
-    def listen(self, ignore_ssl=False) -> None:
+    def listen(self, ignore_ssl=False, on_error_callback=None, on_close_callback=None) -> None:
         """
         Start listening to a WebSocket server.
 
@@ -195,11 +220,14 @@ class StreamSTT(BaseWrapper):
         if not self.session_token:
             raise Exception("Session token is not initialized")
         self._listen_event.clear()
+        self._ignore_ssl = ignore_ssl
+        self._on_error_callback = on_error_callback
+        self._on_close_callback = on_close_callback
         self.ws = websocket.WebSocketApp(
             self.url,
             on_message=self._on_message,
-            on_error=self._on_error,
-            on_close=self._on_close,
+            on_error=on_error_callback if on_error_callback else self._on_error,
+            on_close=on_close_callback if on_close_callback else self._on_close,
             on_open=self._on_open,
         )
         kwargs = {}
