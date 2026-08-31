@@ -20,8 +20,13 @@ class StreamSTT(BaseWrapper):
         "tenants": "wss://stream.{tenant}.sumit-labs.com",
     }
     _SR = 16000
+    # Monitoring thresholds: if more than _STALL_COUNT audio chunks have been
+    # waiting for a transcription for longer than _STALL_TIMEOUT seconds, reconnect.
+    _STALL_COUNT = 3
+    _STALL_TIMEOUT = 20
+    _MONITOR_INTERVAL = 1
 
-    def __init__(self, api_instance, message_callback: Callable[[dict], None], stream_url=None) -> None:
+    def __init__(self, api_instance, message_callback: Callable[[dict], None], stream_url=None, monitor_process=True) -> None:
         """
         Initialize the StreamSTT instance.
 
@@ -36,10 +41,15 @@ class StreamSTT(BaseWrapper):
         self._env = api_instance._env  # Environment (e.g., 'dev' or 'prod')
         self.ws = None  # WebSocket instance
         self._listener_thread = None  # Thread for running WebSocket
-        self.url = None 
+        self.url = None
         self._reconnect_cooldown = 30
         self._last_reconnect = 0
         self._reconnect_lock = threading.Lock()
+        self._pending_audio = {}  # audio_id -> time sent, awaiting transcription
+        self._pending_lock = threading.Lock()
+        self._monitor_thread = None  # Thread for monitoring stalled transcriptions
+        self._monitor_stop_event = Event()
+        self.monitor_process = monitor_process
         if stream_url:
             self.stream_url = stream_url
         elif self._env not in StreamSTT._URL:
@@ -103,6 +113,11 @@ class StreamSTT(BaseWrapper):
              ws (WebSocketApp): The WebSocket application instance.
              message (str): The message received from the WebSocket server.
          """
+        # Any message proves the connection/token is alive, so all audio sent
+        # so far is no longer considered stalled for monitoring purposes.
+        if self.monitor_process:
+            with self._pending_lock:
+                self._pending_audio.clear()
         if self.callback:
             try:
                 self.callback(json.loads(message))
@@ -202,6 +217,9 @@ class StreamSTT(BaseWrapper):
             req['lid'] = True
         try:
             self.ws.send(json.dumps(req))
+            if self.monitor_process:
+                with self._pending_lock:
+                    self._pending_audio[audio_id] = time.time()
         except websocket.WebSocketConnectionClosedException:
             if reconnect_on_failure:
                 self._reconnect()
@@ -210,6 +228,32 @@ class StreamSTT(BaseWrapper):
         except Exception as e:
             raise Exception(f"Error sending audio: {e}")
     
+    def _monitor_pending_audio(self) -> None:
+        """
+        Periodically checks for audio chunks that have been sent without receiving
+        a transcription. If more than `_STALL_COUNT` chunks have been stalled for
+        longer than `_STALL_TIMEOUT` seconds, triggers a reconnection.
+
+        This must not join the listener/monitor threads itself (it runs on the
+        monitor thread), so reconnection is handed off to a separate thread.
+        """
+        while not self._monitor_stop_event.wait(self._MONITOR_INTERVAL):
+            now = time.time()
+            with self._pending_lock:
+                stalled = [
+                    audio_id for audio_id, sent_time in self._pending_audio.items()
+                    if now - sent_time >= self._STALL_TIMEOUT
+                ]
+            if len(stalled) > self._STALL_COUNT:
+                logging.warning(
+                    f"No transcription received for {len(stalled)} audio chunk(s) "
+                    f"within {self._STALL_TIMEOUT}s, triggering reconnection"
+                )
+                with self._pending_lock:
+                    self._pending_audio.clear()
+                Thread(target=self._reconnect, daemon=True).start()
+                return
+
     def listen(self, ignore_ssl=False, on_error_callback=None, on_close_callback=None) -> None:
         """
         Start listening to a WebSocket server.
@@ -240,6 +284,12 @@ class StreamSTT(BaseWrapper):
         self._listener_thread = Thread(target=self.ws.run_forever, daemon=True, kwargs=kwargs)
         self._listener_thread.start()
         self._listen_event.wait()  # Wait for WebSocket connection to open
+        if self.monitor_process:
+            with self._pending_lock:
+                self._pending_audio.clear()
+            self._monitor_stop_event.clear()
+            self._monitor_thread = Thread(target=self._monitor_pending_audio, daemon=True)
+            self._monitor_thread.start()
 
     def stop_listening(self) -> None:
         """
@@ -248,8 +298,19 @@ class StreamSTT(BaseWrapper):
         This will close the WebSocket and join the listener thread to ensure clean shutdown.
         """
         self._listen_event.set()
+        if self.monitor_process:
+            self._monitor_stop_event.set()
         if self.ws:
             self.ws.close()
         if self._listener_thread and self._listener_thread.is_alive():
             self._listener_thread.join()
+        if self.monitor_process:
+            if (
+                self._monitor_thread
+                and self._monitor_thread.is_alive()
+                and self._monitor_thread is not threading.current_thread()
+            ):
+                self._monitor_thread.join()
+            with self._pending_lock:
+                self._pending_audio.clear()
         self.session_token = None
